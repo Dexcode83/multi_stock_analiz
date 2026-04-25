@@ -97,7 +97,7 @@ st.markdown("""
     }
     [data-baseweb="menu-item"][aria-selected="true"] {
         background-color: #1e3a8a !important;
-        color: #ffffff !important;
+        color: #000000 !important;
     }
 
     /* ===== DİĞER BİLEŞENLER ===== */
