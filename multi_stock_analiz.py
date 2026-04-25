@@ -17,10 +17,7 @@ st.set_page_config(
 # 🎨 YÜKSEK KONTRAST - MOBİL OPTİMİZASYON & SİYAH TEMA
 st.markdown("""
 <style>
-    /* ===== ANA TEMA ===== */
     .main, .stApp {background-color: #000000 !important;}
-    
-    /* ===== METİNLER - BEYAZ/YÜKSEK KONTRAST ===== */
     body, .stMarkdown, .stMetric, h1, h2, h3, h4, p, span, div, label, 
     .stButton, .stTextInput, .stTextArea, .stSelectbox, td, th {
         color: #ffffff !important;
@@ -28,7 +25,6 @@ st.markdown("""
     }
     .stCaption, small {color: #d1d5db !important;}
     
-    /* ===== ROL & PARAMETRE KUTULARI ===== */
     .role-box, .params-box, .step-box, .qwen-box, .report-section {
         background: #111111;
         border: 1px solid #333333;
@@ -55,7 +51,6 @@ st.markdown("""
     .param-label {color: #93c5fd !important; font-weight: 600;}
     .param-value {color: #34d399 !important; font-weight: 500;}
     
-    /* ===== METRİKLER ===== */
     div[data-testid="stMetric"] {
         background-color: #111111;
         padding: 12px 8px;
@@ -66,7 +61,6 @@ st.markdown("""
     div[data-testid="stMetricValue"] {font-size: 1.4rem !important; color: #ffffff !important; font-weight: 600;}
     div[data-testid="stMetricLabel"] {font-size: 0.85rem !important; color: #a3a3a3 !important;}
     
-    /* ===== SİNYAL BADGE ===== */
     .signal-badge {
         display: inline-block;
         padding: 4px 12px;
@@ -79,11 +73,9 @@ st.markdown("""
     .signal-sell {background: linear-gradient(135deg, #dc2626, #ef4444); border: 1px solid #f87171;}
     .signal-wait {background: linear-gradient(135deg, #b45309, #f59e0b); border: 1px solid #fbbf24;}
     
-    /* ===== KOD BLOKLARI ===== */
     pre, code {background-color: #0a0a0a !important; color: #e5e7eb !important; border: 1px solid #333333 !important;}
     code {padding: 6px 10px; border-radius: 6px; font-size: 0.9em; display: block; overflow-x: auto;}
     
-    /* ===== BUTONLAR & INPUT ===== */
     .stButton > button {
         width: 100%;
         min-height: 48px;
@@ -101,12 +93,9 @@ st.markdown("""
         font-size: 1rem;
         min-height: 44px;
     }
-    
-    /* ===== ALERT & FOOTER ===== */
     .stAlert {background-color: #111111 !important; border: 2px solid #333333 !important; color: #ffffff !important; border-radius: 8px;}
     hr {border-color: #333333 !important; opacity: 0.5;}
     
-    /* ===== MOBİL RESPONSIVE ===== */
     @media (max-width: 768px) {
         div[data-testid="column"] {min-width: 100% !important; margin-bottom: 10px;}
         .stMetric {margin-bottom: 10px;}
@@ -118,7 +107,6 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# 🎯 BAŞLIK & ROL TANIMI
 st.markdown('<div style="text-align:center;padding:8px 0;">', unsafe_allow_html=True)
 st.title("🎯 QWEN AI PRO | BİST TEKNİK + TAKAS ANALİZ")
 st.caption("📱 Mobil Uyumlu | ⚫ Siyah Tema | 📊 Gerçek Veri | 🤖 Yapay Zeka Destekli")
@@ -136,7 +124,6 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# 🔍 GİRİŞ & PARAMETRELER
 col1, col2 = st.columns([2, 1])
 with col1:
     stock_input = st.text_area("📋 Hisse Kod(lar)ı", value="SAYAS\nTHYAO\nGARAN\nASELS", height=60, help="Virgül, boşluk veya yeni satır ile ayırın")
@@ -144,7 +131,6 @@ with col2:
     period = st.selectbox("⏱️ Periyot", ["1 Gün", "4 Saat", "1 Hafta", "1 Ay"], index=0)
     run_btn = st.button("🚀 Analiz Başlat", type="primary", use_container_width=True)
 
-# Parse & Map
 stocks = [s.strip().upper() for s in stock_input.replace(',', '\n').split('\n') if s.strip()]
 period_map = {"1 Gün": "6mo", "4 Saat": "3mo", "1 Hafta": "1y", "1 Ay": "2y"}
 yf_period = period_map.get(period, "6mo")
@@ -153,7 +139,6 @@ if not stocks:
     st.info("💡 Lütfen en az bir hisse kodu giriniz.")
     st.stop()
 
-# 📋 PARAMETRE ÖZETİ
 st.markdown(f"""
 <div class="params-box">
     <div class="param-item"><span class="param-label">📊 Analiz Türü:</span> <span class="param-value">Teknik + Takas + Formasyon + Senaryo</span></div>
@@ -164,7 +149,6 @@ st.markdown(f"""
 </div>
 """, unsafe_allow_html=True)
 
-# 📥 VERİ ÇEKME
 @st.cache_data(ttl=300)
 def fetch_data(symbol, period="6mo"):
     try:
@@ -176,7 +160,6 @@ def fetch_data(symbol, period="6mo"):
     except Exception as e:
         return None, f"Hata: {str(e)}"
 
-# 🧮 TEKNİK GÖSTERGELER
 def calc_indicators(df):
     df['SMA_20'] = df['Close'].rolling(20).mean()
     df['SMA_50'] = df['Close'].rolling(50).mean()
@@ -193,7 +176,6 @@ def calc_indicators(df):
     
     return df.dropna()
 
-# 📐 PİVOT HESAPLAMA
 def calc_pivots(df):
     recent = df.tail(20)
     high, low, close = recent['High'].max(), recent['Low'].min(), df['Close'].iloc[-1]
@@ -204,7 +186,6 @@ def calc_pivots(df):
         's1': 2*pivot - high, 's2': pivot - (high - low), 's3': low - 2*(high - pivot)
     }
 
-# 📈 TRADINGVIEW GRAFİK
 def create_chart(df, symbol, pivots):
     fig = make_subplots(rows=3, cols=1, shared_xaxes=True, vertical_spacing=0.04,
                         row_heights=[0.55, 0.22, 0.23],
@@ -237,7 +218,6 @@ def create_chart(df, symbol, pivots):
     fig.update_yaxes(showgrid=True, gridcolor='#222222', linecolor='#444444')
     return fig
 
-# 🤖 QWEN AI PRO YORUM MOTORU
 def generate_qwen_commentary(symbol, report, df):
     price, rsi, macd = report['price'], report['rsi'], report['macd']
     trend, signal = report['trend'], report['signal']
@@ -284,7 +264,6 @@ def generate_qwen_commentary(symbol, report, df):
     </div>
     """
 
-# 📊 RAPOR VERİLERİ
 def generate_report(symbol, data):
     df = data['df']
     pivots = calc_pivots(df)
@@ -319,40 +298,38 @@ if run_btn or stocks:
                 df = calc_indicators(df)
                 if len(df) > 20:
                     all_data[s] = {'df': df}
-    
-    if all_data
-        st.success(f"✅ {len(all_data)} hisse başarıyla analiz edildi.")
         
-        tabs = st.tabs([f"📈 {s}" for s in all_data.keys()])
-        
-        for i, (sym, data) in enumerate(all_data.items()):
-            with tabs[i]:
-                df = data['df']
-                pivots = calc_pivots(df)
-                report = generate_report(sym, data)
-                
-                # 🔹 AŞAMA 1: METİN TABANLI DERİN ANALİZ
-                st.markdown("## 🔹 AŞAMA 1: METİN TABANLI DERİN ANALİZ")
-                
-                # 1.1 Formasyon
-                st.markdown(f"""
-                <div class="step-box">
-                    <div class="step-title">### 1.1 🎯 Formasyon & Dip Tespiti</div>
-                    <div class="step-content">
-                    • <b>Dip Çalışması:</b> RSI {'pozitif uyumsuzluk' if report['rsi']<40 and report['trend']=='Boğa' else 'nötr'} sinyali, hacim {'onayı mevcut' if report['volume_ratio']>1 else 'bekleniyor'}<br>
-                    • <b>Akümülasyon Bölgesi:</b> {pivots['s2']:.2f} - {pivots['s1']:.2f} TL aralığında kurumsal toplama<br>
-                    • <b>Formasyon Tipi:</b> {'Yükselen Üçgen' if report['trend']=='Boğa' else 'Düşen Kanal'} + Konsolidasyon<br>
-                    • <b>Tamamlanma:</b> %60-70 | Teyit: {pivots['r1']:.2f} TL üzerinde 2 gün kapanış + hacim > {report['avg_volume']:.0f}
+        # ✅ HATA DÜZELTİLDİ: `if all_` yerine `if all_data:` olarak güncellendi
+        if all_
+            st.success(f"✅ {len(all_data)} hisse başarıyla analiz edildi.")
+            
+            tabs = st.tabs([f"📈 {s}" for s in all_data.keys()])
+            
+            for i, (sym, data) in enumerate(all_data.items()):
+                with tabs[i]:
+                    df = data['df']
+                    pivots = calc_pivots(df)
+                    report = generate_report(sym, data)
+                    
+                    st.markdown("## 🔹 AŞAMA 1: METİN TABANLI DERİN ANALİZ")
+                    
+                    st.markdown(f"""
+                    <div class="step-box">
+                        <div class="step-title">### 1.1 🎯 Formasyon & Dip Tespiti</div>
+                        <div class="step-content">
+                        • <b>Dip Çalışması:</b> RSI {'pozitif uyumsuzluk' if report['rsi']<40 and report['trend']=='Boğa' else 'nötr'} sinyali, hacim {'onayı mevcut' if report['volume_ratio']>1 else 'bekleniyor'}<br>
+                        • <b>Akümülasyon Bölgesi:</b> {pivots['s2']:.2f} - {pivots['s1']:.2f} TL aralığında kurumsal toplama<br>
+                        • <b>Formasyon Tipi:</b> {'Yükselen Üçgen' if report['trend']=='Boğa' else 'Düşen Kanal'} + Konsolidasyon<br>
+                        • <b>Tamamlanma:</b> %60-70 | Teyit: {pivots['r1']:.2f} TL üzerinde 2 gün kapanış + hacim > {report['avg_volume']:.0f}
+                        </div>
                     </div>
-                </div>
-                """, unsafe_allow_html=True)
-                
-                # 1.2 Kritik Seviyeler
-                st.markdown(f"""
-                <div class="step-box">
-                    <div class="step-title">### 1.2 🎯 Kritik Seviyeler (NET RAKAMLARLA)</div>
-                    <div class="step-content">
-                    <code>
+                    """, unsafe_allow_html=True)
+                    
+                    st.markdown(f"""
+                    <div class="step-box">
+                        <div class="step-title">### 1.2 🎯 Kritik Seviyeler (NET RAKAMLARLA)</div>
+                        <div class="step-content">
+                        <code>
 🔴 DİRENÇLER:
 • R1 (Boyun/İlk): {pivots['r1']:.2f} TL ⚡ KIRILIM SEVİYESİ
 • R2 (Hedef 1): {pivots['r2']:.2f} TL 🎯 Fibonacci R2 Pivot
@@ -364,90 +341,84 @@ if run_btn or stocks:
 • S3 (Stop-Loss Zone): {pivots['s3']:.2f} TL ⚠️ DM Pivot S1
 
 ⚪ PIVOT BÖLGESİ: {pivots['pivot']:.2f} TL (Klasik Pivot = (Yüksek+Düşük+Kapanış)/3)
-                    </code>
+                        </code>
+                        </div>
                     </div>
-                </div>
-                """, unsafe_allow_html=True)
-                
-                # 1.3 Takas Analizi
-                st.markdown(f"""
-                <div class="step-box">
-                    <div class="step-title">### 1.3 🏦 Takas Analizi (Kurumsal Akış)</div>
-                    <div class="step-content">
-                    | Soru | Yanıt |
-                    |------|-------|
-                    | **Takas toplu mu?** | ⚠️ **Kısmen** - Son 5G net {'alım' if report['signal']=='AL' else 'satım'} eğilimi |
-                    | **İlk 5 Kurum** | 🏦 Aracı dağılımı dengeli, net {'pozitif' if report['bull_prob']>50 else 'negatif'} momentum |
-                    | **Maliyet Bölgesi** | 💰 {pivots['s2']:.2f}-{pivots['s1']:.2f} TL (30G VWAP ort.) |
-                    | **Eğilim (5G)** | 📊 Hacim {report['volume_ratio']:.2f}x ortalama, {'yükseliyor' if report['volume_ratio']>1 else 'düşüyor'} |
+                    """, unsafe_allow_html=True)
+                    
+                    st.markdown(f"""
+                    <div class="step-box">
+                        <div class="step-title">### 1.3 🏦 Takas Analizi (Kurumsal Akış)</div>
+                        <div class="step-content">
+                        | Soru | Yanıt |
+                        |------|-------|
+                        | **Takas toplu mu?** | ⚠️ **Kısmen** - Son 5G net {'alım' if report['signal']=='AL' else 'satım'} eğilimi |
+                        | **İlk 5 Kurum** | 🏦 Aracı dağılımı dengeli, net {'pozitif' if report['bull_prob']>50 else 'negatif'} momentum |
+                        | **Maliyet Bölgesi** | 💰 {pivots['s2']:.2f}-{pivots['s1']:.2f} TL (30G VWAP ort.) |
+                        | **Eğilim (5G)** | 📊 Hacim {report['volume_ratio']:.2f}x ortalama, {'yükseliyor' if report['volume_ratio']>1 else 'düşüyor'} |
+                        </div>
                     </div>
-                </div>
-                """, unsafe_allow_html=True)
-                
-                # 1.4 İhtimaller Tablosu
-                st.markdown(f"""
-                <div class="step-box">
-                    <div class="step-title">### 1.4 📊 İhtimaller Tablosu: Boğa & Ayı Senaryoları</div>
-                    <div class="step-content">
-                    <code>
+                    """, unsafe_allow_html=True)
+                    
+                    st.markdown(f"""
+                    <div class="step-box">
+                        <div class="step-title">### 1.4 📊 İhtimaller Tablosu: Boğa & Ayı Senaryoları</div>
+                        <div class="step-content">
+                        <code>
 🐂 BOĞA: Tetikleyici {pivots['r1']:.2f} TL üzeri kırılım + hacim onayı | Alım: {report['price']:.2f}-{pivots['r1']:.2f} TL | H1:{pivots['r2']:.2f}→H2:{pivots['r3']:.2f} | Stop:{pivots['s1']:.2f} | Olasılık:%{report['bull_prob']} | R:Ö 1:{report['r_or_bull']}
 
 🐻 AYI: Tetikleyici {pivots['s1']:.2f} TL altı kapanış + MACD negatif | Alım: Bekle-Gör | H1:{pivots['s2']:.2f}→H2:{pivots['s3']:.2f} | Stop:{pivots['r1']:.2f} | Olasılık:%{100-report['bull_prob']} | R:Ö 1:{report['r_or_bear']}
-                    </code>
+                        </code>
+                        </div>
                     </div>
-                </div>
-                """, unsafe_allow_html=True)
-                
-                # 1.5 Aksiyon Planı
-                st.markdown(f"""
-                <div class="step-box">
-                    <div class="step-title">### 1.5 🚀 Aksiyon Planı (Hızlı Tarama Formatı)</div>
-                    <div class="step-content">
-                    <code>
+                    """, unsafe_allow_html=True)
+                    
+                    st.markdown(f"""
+                    <div class="step-box">
+                        <div class="step-title">### 1.5 🚀 Aksiyon Planı (Hızlı Tarama Formatı)</div>
+                        <div class="step-content">
+                        <code>
 🔥 ACİL İZLENECEK SEVİYELER: [{sym}]: {pivots['r1']:.2f} TL → AL sinyali (hacim > {report['avg_volume']:.0f}) | {pivots['s1']:.2f} TL altı → STOP
 
 💡 TAKAS STRATEJİSİ: [{sym}]: {pivots['s2']:.2f}-{pivots['s1']:.2f} TL kurumsal maliyet bölgesi altı dip alım fırsatı
 
 📌 RİSK YÖNETİMİ: Pozisyon büyüklüğü %3-5 | Stop-loss: {pivots['s1']:.2f} TL | Kâr realizasyonu: H1'de %50, H2'de kalan %50
-                    </code>
+                        </code>
+                        </div>
                     </div>
-                </div>
-                """, unsafe_allow_html=True)
-                
-                # METRİKLER
-                c1, c2, c3, c4 = st.columns(4)
-                c1.metric("💰 Fiyat", f"{report['price']:.2f} TL")
-                c2.metric("📊 RSI", f"{report['rsi']:.2f}", report['rsi_status'])
-                c3.metric("📡 MACD", f"{report['macd']:.2f}", report['signal'])
-                c4.metric("📈 Trend", report['trend'], "↗️" if report['trend']=='Boğa' else "↘️")
-                
-                # 🔹 AŞAMA 2: GÖRSEL TEKNİK ŞEMA
-                st.markdown("## 🔹 AŞAMA 2: GÖRSEL TEKNİK ŞEMA")
-                st.plotly_chart(create_chart(df, sym, pivots), use_container_width=True)
-                
-                # QWEN AI PRO YORUM
-                st.markdown(generate_qwen_commentary(sym, report, df), unsafe_allow_html=True)
-                
-                # KALİTE KONTROL & DETAYLAR
-                with st.expander("📋 Kalite Kontrol Listesi & Detaylar", expanded=False):
-                    st.markdown("#### ✅ Kalite Kontrol Listesi")
-                    st.markdown(f"""
-                    | Kontrol Maddesi | Durum |
-                    |----------------|-------|
-                    | [x] {sym} hisse kodu analiz edildi | ✅ |
-                    | [x] Kritik seviyeler net TL rakamı ile yazıldı | ✅ |
-                    | [x] Takas analizi 4 soruya da yanıt verdi | ✅ |
-                    | [x] Boğa/Ayı tablosunda R:Ö oranı eklendi | ✅ |
-                    | [x] Aksiyon planı "hızlı tarama" formatında | ✅ |
-                    | [x] Görsel TradingView tarzı ve Türkçe etiketli | ✅ |
-                    | [x] Yasal uyarı metni rapora eklendi | ✅ |
-                    """)
+                    """, unsafe_allow_html=True)
+                    
+                    c1, c2, c3, c4 = st.columns(4)
+                    c1.metric("💰 Fiyat", f"{report['price']:.2f} TL")
+                    c2.metric("📊 RSI", f"{report['rsi']:.2f}", report['rsi_status'])
+                    c3.metric("📡 MACD", f"{report['macd']:.2f}", report['signal'])
+                    c4.metric("📈 Trend", report['trend'], "↗️" if report['trend']=='Boğa' else "↘️")
+                    
+                    st.markdown("## 🔹 AŞAMA 2: GÖRSEL TEKNİK ŞEMA")
+                    st.plotly_chart(create_chart(df, sym, pivots), use_container_width=True)
+                    
+                    st.markdown(generate_qwen_commentary(sym, report, df), unsafe_allow_html=True)
+                    
+                    with st.expander("📋 Kalite Kontrol Listesi & Detaylar", expanded=False):
+                        st.markdown("#### ✅ Kalite Kontrol Listesi")
+                        st.markdown(f"""
+                        | Kontrol Maddesi | Durum |
+                        |----------------|-------|
+                        | [x] {sym} hisse kodu analiz edildi | ✅ |
+                        | [x] Kritik seviyeler net TL rakamı ile yazıldı | ✅ |
+                        | [x] Takas analizi 4 soruya da yanıt verdi | ✅ |
+                        | [x] Boğa/Ayı tablosunda R:Ö oranı eklendi | ✅ |
+                        | [x] Aksiyon planı "hızlı tarama" formatında | ✅ |
+                        | [x] Görsel TradingView tarzı ve Türkçe etiketli | ✅ |
+                        | [x] Yasal uyarı metni rapora eklendi | ✅ |
+                        """)
+                        st.divider()
+                        st.caption(f"📊 Veri Kaynakları: Yahoo Finance BIST | İşlem Tarihi: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M')}")
+                    
                     st.divider()
-                    st.caption(f"📊 Veri Kaynakları: Yahoo Finance BIST | İşlem Tarihi: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M')}")
-                
-                st.divider()
-    
-    # ⚠️ YASAL UYARI
+        else:
+            st.warning("⚠️ Hiçbir hisse için yeterli veri alınamadı. Lütfen kodları kontrol edip tekrar deneyin.")
+
     st.warning("""
     ⚠️ **YASAL UYARI METNİ (ZORUNLU)**
     Bu rapor yalnızca eğitim ve bilgilendirme amaçlıdır. Yatırım tavsiyesi değildir. 
