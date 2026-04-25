@@ -14,14 +14,16 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# 🎨 DÜZELTİLMİŞ CSS: GİRİŞ ALANLARI & DROPDOWN OKUNABİLİRLİĞİ GARANTİ
+# 🎨 DÜZELTİLMİŞ CSS: DROPDOWN OKUNABİLİRLİĞİ & BOŞ GİRİŞ UYUMLU
 st.markdown("""
 <style>
     .main, .stApp {background-color: #000000 !important;}
-    body, .stMarkdown, .stMetric, h1, h2, h3, h4, p, span, div, label, 
-    .stButton, td, th {color: #ffffff !important; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;}
+    body, .stMarkdown, .stMetric, h1, h2, h3, h4, p, span, div, label, td, th {
+        color: #ffffff !important;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
     .stCaption, small {color: #d1d5db !important;}
-    
+
     .role-box, .params-box, .step-box, .qwen-box, .report-section {
         background: #111111; border: 1px solid #333333; border-radius: 8px; padding: 14px; margin: 10px 0;
     }
@@ -29,53 +31,54 @@ st.markdown("""
     .step-box {border-left: 4px solid #60a5fa;}
     .qwen-box {border: 2px solid #2563eb; border-left: 5px solid #3b82f6;}
     .report-section {border: 1px solid #404040;}
-    
+
     .role-title, .step-title, .qwen-title {color: #93c5fd !important; font-weight: 700; font-size: 1.05rem; margin-bottom: 8px;}
     .role-content, .step-content, .qwen-content, .param-item {color: #f3f4f6 !important; font-size: 0.9rem; line-height: 1.5;}
     .param-label {color: #93c5fd !important; font-weight: 600;}
     .param-value {color: #34d399 !important; font-weight: 500;}
-    
+
     div[data-testid="stMetric"] {background-color: #111111; padding: 12px 8px; border-radius: 8px; border: 1px solid #333333; text-align: center;}
     div[data-testid="stMetricValue"] {font-size: 1.4rem !important; color: #ffffff !important; font-weight: 600;}
     div[data-testid="stMetricLabel"] {font-size: 0.85rem !important; color: #a3a3a3 !important;}
-    
+
     .signal-badge {display: inline-block; padding: 4px 12px; border-radius: 14px; font-size: 0.85rem; font-weight: 700; color: #ffffff !important;}
     .signal-buy {background: linear-gradient(135deg, #059669, #10b981); border: 1px solid #34d399;}
     .signal-sell {background: linear-gradient(135deg, #dc2626, #ef4444); border: 1px solid #f87171;}
     .signal-wait {background: linear-gradient(135deg, #b45309, #f59e0b); border: 1px solid #fbbf24;}
-    
+
     pre, code {background-color: #0a0a0a !important; color: #e5e7eb !important; border: 1px solid #333333 !important;}
     code {padding: 6px 10px; border-radius: 6px; font-size: 0.9em; display: block; overflow-x: auto;}
-    
+
     .stButton > button {
         width: 100%; min-height: 48px; font-size: 1rem; font-weight: 600; border-radius: 8px;
         background: linear-gradient(135deg, #1d4ed8, #3b82f6) !important; color: #ffffff !important; border: none !important;
     }
-    
-    /* ✅ DÜZELTME: GİRİŞ ALANLARI VE DROPDOWN MENÜLER */
-    .stTextInput input, .stTextArea textarea, .stSelectbox select {
+
+    /* ✅ KRİTİK DÜZELTME: GİRİŞ ALANLARI VE DROPDOWN */
+    .stTextInput > div > div > input, .stTextArea > div > div > textarea {
         background-color: #1a1a1a !important;
         color: #ffffff !important;
         border: 1px solid #404040 !important;
-        border-radius: 8px !important;
-        min-height: 44px;
     }
-    .stTextInput input::placeholder, .stTextArea textarea::placeholder {color: #9ca3af !important;}
-    
-    /* Dropdown açılır liste arka planı ve opsiyonlar */
-    [data-baseweb="select"] [data-baseweb="menu"] {
+    div[data-baseweb="select"] {
+        background-color: #1a1a1a !important;
+        border: 1px solid #404040 !important;
+        color: #ffffff !important;
+    }
+    div[data-baseweb="select"] p { color: #ffffff !important; }
+    [data-baseweb="menu"] {
         background-color: #1a1a1a !important;
         border: 1px solid #404040 !important;
     }
-    [data-baseweb="select"] [data-baseweb="option"] {
+    [data-baseweb="menu-item"] {
         color: #ffffff !important;
         background-color: #1a1a1a !important;
     }
-    [data-baseweb="select"] [data-baseweb="option"]:hover {
+    [data-baseweb="menu-item"]:hover {
         background-color: #333333 !important;
         color: #ffffff !important;
     }
-    
+
     .stAlert {background-color: #111111 !important; border: 2px solid #333333 !important; color: #ffffff !important; border-radius: 8px;}
     hr {border-color: #333333 !important; opacity: 0.5;}
     
@@ -107,7 +110,8 @@ st.markdown("""
 
 col1, col2 = st.columns([2, 1])
 with col1:
-    stock_input = st.text_area("📋 Hisse Kod(lar)ı", value="SAYAS\nTHYAO\nGARAN\nASELS", height=60, help="Virgül, boşluk veya yeni satır ile ayırın")
+    # ✅ DEĞİŞİKLİK: value="" yapıldı. Artık kutu boş gelecek, siz yazacaksınız.
+    stock_input = st.text_area("📋 Hisse Kod(lar)ı", value="", height=60, help="Virgül, boşluk veya yeni satır ile ayırın")
 with col2:
     period = st.selectbox("⏱️ Periyot", ["1 Gün", "4 Saat", "1 Hafta", "1 Ay"], index=0)
     run_btn = st.button("🚀 Analiz Başlat", type="primary", use_container_width=True)
