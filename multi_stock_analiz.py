@@ -63,7 +63,7 @@ st.markdown("""
     /* ✅ KRİTİK DÜZELTME: DROPDOWN MENÜ TAM GÖRÜNÜR */
     /* Kapatılmış kutu */
     div[data-testid="stSelectbox"] > div > div[data-baseweb="select"] {
-        background-color: #1a1a1a !important;
+        background-color: #111111 !important;
         border: 1px solid #404040 !important;
         border-radius: 8px !important;
     }
