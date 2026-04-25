@@ -299,8 +299,8 @@ if run_btn or stocks:
                 if len(df) > 20:
                     all_data[s] = {'df': df}
         
-        # ✅ HATA DÜZELTİLDİ: `if all_` yerine `if all_data:` olarak güncellendi
-        if all_
+        # ✅ HATA DÜZELTİLDİ: "if all_data:" olarak tamamlandı
+        if all_data:
             st.success(f"✅ {len(all_data)} hisse başarıyla analiz edildi.")
             
             tabs = st.tabs([f"📈 {s}" for s in all_data.keys()])
