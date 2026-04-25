@@ -148,7 +148,6 @@ def calc_indicators(df):
 
 # 🆕 DİNAMİK FORMASYON TESPİT MOTORU
 def detect_pattern(df):
-    """Fiyat action, hacim ve volatiliteye göre dinamik formasyon tespit eder."""
     recent = df.tail(30).copy()
     prices = recent['Close'].values
     highs = recent['High'].values
@@ -156,17 +155,14 @@ def detect_pattern(df):
     volumes = recent['Volume'].values
     rsi_vals = recent['RSI'].values
 
-    # Temel metrikler
     price_change = (prices[-1] - prices[0]) / prices[0]
     vol_ratio = np.mean(volumes[-5:]) / np.mean(volumes[-10:-5]) if np.mean(volumes[-10:-5]) > 0 else 1
     volatility = np.std(prices) / np.mean(prices)
 
-    # Trend & Momentum
     is_uptrend = prices[-1] > prices[-10] > prices[-20]
     is_downtrend = prices[-1] < prices[-10] < prices[-20]
     is_sideways = abs(price_change) < 0.05 and volatility < 0.03
 
-    # Formasyon Mantığı
     pattern, confidence = "Konsolidasyon", 60
 
     if is_uptrend:
@@ -277,7 +273,6 @@ def generate_report(symbol, data):
     signal = "AL" if macd > 0 and rsi < 70 else ("SAT" if macd < 0 else "BEKLE")
     rsi_stat = "Aşırı Alım" if rsi > 70 else ("Aşırı Satım" if rsi < 30 else "Nötr")
     
-    # ✅ DİNAMİK FORMASYON ÇAĞRISI
     formasyon_tipi, formasyon_guven = detect_pattern(df)
     
     bull_prob = min(85, max(25, int(50 + (rsi-50)*0.4 + (1 if macd>0 else -1)*10)))
@@ -302,7 +297,8 @@ if run_btn or stocks:
                 df = calc_indicators(df)
                 if len(df) > 20: all_data[s] = {'df': df}
         
-        if all_
+        # ✅ HATA DÜZELTİLDİ: Tam ve doğru syntax
+        if all_data:
             st.success(f"✅ {len(all_data)} hisse başarıyla analiz edildi.")
             tabs = st.tabs([f"📈 {s}" for s in all_data.keys()])
             for i, (sym, data) in enumerate(all_data.items()):
@@ -312,7 +308,6 @@ if run_btn or stocks:
                     report = generate_report(sym, data)
                     st.markdown("## 🔹 AŞAMA 1: METİN TABANLI DERİN ANALİZ")
                     
-                    # ✅ DİNAMİK FORMASYON KULLANILDI
                     st.markdown(f"""
                     <div class="step-box">
                         <div class="step-title">### 1.1 🎯 Formasyon & Dip Tespiti</div>
