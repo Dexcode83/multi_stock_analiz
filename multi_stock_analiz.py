@@ -14,7 +14,7 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# 🎨 GÜNCELLENMİŞ CSS: DROPDOWN %100 GÖRÜNÜR & SİYAH TEMA
+# 🎨 DÜZELTİLMİŞ CSS: DROPDOWN YAZILARI BEYAZ GÖRÜNÜR
 st.markdown("""
 <style>
     /* ===== GENEL TEMA ===== */
@@ -60,20 +60,19 @@ st.markdown("""
         background: linear-gradient(135deg, #1d4ed8, #3b82f6) !important; color: #ffffff !important; border: none !important;
     }
 
-    /* ✅ KRİTİK DÜZELTME: DROPDOWN MENÜ TAM GÖRÜNÜR */
-    /* Kapatılmış kutu */
+    /* ✅ DÜZELTİLDİ: DROPDOWN YAZILARI BEYAZ GÖRÜNÜR */
     div[data-testid="stSelectbox"] > div > div[data-baseweb="select"] {
         background-color: #111111 !important;
         border: 1px solid #404040 !important;
         border-radius: 8px !important;
     }
-    div[data-testid="stSelectbox"] > div > div[data-baseweb="select"] input,
-    div[data-testid="stSelectbox"] > div > div[data-baseweb="select"] p,
-    div[data-testid="stSelectbox"] > div > div[data-baseweb="select"] span {
-        color: #000000 !important;
+    
+    /* SEÇİLİ ÖĞE (kapalı kutudaki yazı) - BEYAZ */
+    div[data-testid="stSelectbox"] > div > div[data-baseweb="select"] div[role="button"] span {
+        color: #ffffff !important;
     }
     
-    /* Açılır liste (Dropdown) */
+    /* Açılır liste (Dropdown) - SİYAH ARKAPLAN */
     [data-baseweb="menu"] {
         background-color: #1a1a1a !important;
         border: 1px solid #404040 !important;
@@ -82,7 +81,7 @@ st.markdown("""
         padding: 4px 0 !important;
     }
     
-    /* Liste öğeleri */
+    /* Liste öğeleri - BEYAZ YAZI */
     [data-baseweb="menu"] > div {
         background-color: #1a1a1a !important;
     }
@@ -97,7 +96,7 @@ st.markdown("""
     }
     [data-baseweb="menu-item"][aria-selected="true"] {
         background-color: #1e3a8a !important;
-        color: #000000 !important;
+        color: #ffffff !important;
     }
 
     /* ===== DİĞER BİLEŞENLER ===== */
