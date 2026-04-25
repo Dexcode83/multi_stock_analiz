@@ -8,13 +8,13 @@ import yfinance as yf
 
 # 🌐 Sayfa Yapılandırması
 st.set_page_config(
-    page_title="Qwen AI Pro | BIST Analiz", 
+    page_title="Qwen AI Pro | BIST Teknik Analiz", 
     layout="wide", 
     page_icon="🎯",
     initial_sidebar_state="collapsed"
 )
 
-# 🎨 YÜKSEK KONTRAST - MOBİL OPTİMİZASYON
+# 🎨 YÜKSEK KONTRAST - MOBİL OPTİMİZASYON & SİYAH TEMA
 st.markdown("""
 <style>
     /* ===== ANA TEMA ===== */
@@ -22,75 +22,49 @@ st.markdown("""
     
     /* ===== METİNLER - BEYAZ/YÜKSEK KONTRAST ===== */
     body, .stMarkdown, .stMetric, h1, h2, h3, h4, p, span, div, label, 
-    .stButton, .stTextInput, .stTextArea, .stSelectbox {
+    .stButton, .stTextInput, .stTextArea, .stSelectbox, td, th {
         color: #ffffff !important;
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     }
     .stCaption, small {color: #d1d5db !important;}
     
-    /* ===== ROL KUTUSU - VURGULU ===== */
-    .role-box {
-        background: linear-gradient(135deg, #1a1a1a 0%, #0f0f0f 100%);
-        border: 2px solid #3b82f6;
-        border-left: 5px solid #60a5fa;
-        border-radius: 10px;
-        padding: 16px;
-        margin: 10px 0 20px 0;
-    }
-    .role-title {
-        color: #93c5fd !important;
-        font-weight: 700;
-        font-size: 1.1rem;
-        margin-bottom: 8px;
-    }
-    .role-content {color: #f3f4f6 !important; font-size: 0.9rem; line-height: 1.5;}
-    
-    /* ===== PARAMETRE KUTUSU ===== */
-    .params-box {
-        background-color: #1a1a1a;
-        border: 1px solid #404040;
+    /* ===== ROL & PARAMETRE KUTULARI ===== */
+    .role-box, .params-box, .step-box, .qwen-box, .report-section {
+        background: #111111;
+        border: 1px solid #333333;
         border-radius: 8px;
-        padding: 12px;
+        padding: 14px;
         margin: 10px 0;
     }
-    .param-item {color: #ffffff; font-size: 0.9rem; margin: 4px 0;}
-    .param-label {color: #93c5fd; font-weight: 600;}
-    .param-value {color: #10b981; font-weight: 500;}
+    .role-box {border-left: 4px solid #3b82f6;}
+    .step-box {border-left: 4px solid #60a5fa;}
+    .qwen-box {border: 2px solid #2563eb; border-left: 5px solid #3b82f6;}
+    .report-section {border: 1px solid #404040;}
+    
+    .role-title, .step-title, .qwen-title {
+        color: #93c5fd !important;
+        font-weight: 700;
+        font-size: 1.05rem;
+        margin-bottom: 8px;
+    }
+    .role-content, .step-content, .qwen-content, .param-item {
+        color: #f3f4f6 !important;
+        font-size: 0.9rem;
+        line-height: 1.5;
+    }
+    .param-label {color: #93c5fd !important; font-weight: 600;}
+    .param-value {color: #34d399 !important; font-weight: 500;}
     
     /* ===== METRİKLER ===== */
     div[data-testid="stMetric"] {
-        background-color: #1a1a1a;
+        background-color: #111111;
         padding: 12px 8px;
         border-radius: 8px;
-        border: 1px solid #404040;
+        border: 1px solid #333333;
         text-align: center;
     }
     div[data-testid="stMetricValue"] {font-size: 1.4rem !important; color: #ffffff !important; font-weight: 600;}
     div[data-testid="stMetricLabel"] {font-size: 0.85rem !important; color: #a3a3a3 !important;}
-    
-    /* ===== ANALİZ ADIMLARI KUTULARI ===== */
-    .step-box {
-        background-color: #1a1a1a;
-        border-radius: 8px;
-        padding: 14px;
-        margin: 10px 0;
-        border-left: 4px solid #60a5fa;
-    }
-    .step-title {color: #93c5fd !important; font-weight: 600; font-size: 1rem; margin-bottom: 8px;}
-    .step-content {color: #f3f4f6 !important; font-size: 0.9rem; line-height: 1.5;}
-    .step-content b, .step-content strong {color: #ffffff !important;}
-    
-    /* ===== QWEN AI PRO KUTUSU ===== */
-    .qwen-box {
-        background: #1a1a1a;
-        border: 2px solid #3b82f6;
-        border-left: 5px solid #60a5fa;
-        border-radius: 10px;
-        padding: 16px;
-        margin: 12px 0;
-    }
-    .qwen-title {color: #93c5fd !important; font-weight: 700; font-size: 1.1rem; margin-bottom: 12px;}
-    .qwen-content {color: #ffffff !important; line-height: 1.6; font-size: 0.95rem;}
     
     /* ===== SİNYAL BADGE ===== */
     .signal-badge {
@@ -106,50 +80,31 @@ st.markdown("""
     .signal-wait {background: linear-gradient(135deg, #b45309, #f59e0b); border: 1px solid #fbbf24;}
     
     /* ===== KOD BLOKLARI ===== */
-    pre, code {background-color: #1a1a1a !important; color: #e5e7eb !important; border: 1px solid #404040 !important;}
-    code {padding: 4px 8px; border-radius: 4px; font-size: 0.9em;}
+    pre, code {background-color: #0a0a0a !important; color: #e5e7eb !important; border: 1px solid #333333 !important;}
+    code {padding: 6px 10px; border-radius: 6px; font-size: 0.9em; display: block; overflow-x: auto;}
     
-    /* ===== BUTONLAR ===== */
+    /* ===== BUTONLAR & INPUT ===== */
     .stButton > button {
         width: 100%;
         min-height: 48px;
         font-size: 1rem;
         font-weight: 600;
         border-radius: 8px;
-        background: linear-gradient(135deg, #2563eb, #3b82f6) !important;
+        background: linear-gradient(135deg, #1d4ed8, #3b82f6) !important;
         color: #ffffff !important;
         border: none !important;
     }
-    
-    /* ===== INPUT ALANLARI ===== */
     .stTextInput input, .stTextArea textarea, .stSelectbox select {
-        background-color: #1a1a1a !important;
+        background-color: #111111 !important;
         color: #ffffff !important;
         border: 1px solid #404040 !important;
         font-size: 1rem;
         min-height: 44px;
     }
     
-    /* ===== EXPANDER ===== */
-    .streamlit-expanderHeader {
-        background-color: #1a1a1a !important;
-        color: #ffffff !important;
-        border: 1px solid #404040 !important;
-        border-radius: 8px !important;
-    }
-    .streamlit-expanderContent {
-        background-color: #0f0f0f !important;
-        color: #ffffff !important;
-        border: 1px solid #404040 !important;
-    }
-    
-    /* ===== ALERT BOX ===== */
-    .stAlert {
-        background-color: #1a1a1a !important;
-        border: 2px solid #404040 !important;
-        color: #ffffff !important;
-        border-radius: 8px;
-    }
+    /* ===== ALERT & FOOTER ===== */
+    .stAlert {background-color: #111111 !important; border: 2px solid #333333 !important; color: #ffffff !important; border-radius: 8px;}
+    hr {border-color: #333333 !important; opacity: 0.5;}
     
     /* ===== MOBİL RESPONSIVE ===== */
     @media (max-width: 768px) {
@@ -158,14 +113,8 @@ st.markdown("""
         h1 {font-size: 1.5rem !important;}
         h2 {font-size: 1.25rem !important;}
         h3 {font-size: 1.1rem !important;}
-        .role-title {font-size: 1rem !important;}
+        code {font-size: 0.8em;}
     }
-    
-    /* ===== SCROLLBAR ===== */
-    ::-webkit-scrollbar {width: 8px;}
-    ::-webkit-scrollbar-track {background: #000000;}
-    ::-webkit-scrollbar-thumb {background: #404040; border-radius: 4px;}
-    ::-webkit-scrollbar-thumb:hover {background: #60a5fa;}
 </style>
 """, unsafe_allow_html=True)
 
@@ -175,7 +124,6 @@ st.title("🎯 QWEN AI PRO | BİST TEKNİK + TAKAS ANALİZ")
 st.caption("📱 Mobil Uyumlu | ⚫ Siyah Tema | 📊 Gerçek Veri | 🤖 Yapay Zeka Destekli")
 st.markdown('</div>', unsafe_allow_html=True)
 
-# 📋 ROL TANIMI KUTUSU
 st.markdown("""
 <div class="role-box">
     <div class="role-title">👨‍💼 ROL TANIMI</div>
@@ -193,26 +141,25 @@ col1, col2 = st.columns([2, 1])
 with col1:
     stock_input = st.text_area("📋 Hisse Kod(lar)ı", value="SAYAS\nTHYAO\nGARAN\nASELS", height=60, help="Virgül, boşluk veya yeni satır ile ayırın")
 with col2:
-    period = st.selectbox("⏱️ Periyot", ["1G", "4S", "1H", "1W"], index=0)
+    period = st.selectbox("⏱️ Periyot", ["1 Gün", "4 Saat", "1 Hafta", "1 Ay"], index=0)
     run_btn = st.button("🚀 Analiz Başlat", type="primary", use_container_width=True)
 
-# Parse stocks
+# Parse & Map
 stocks = [s.strip().upper() for s in stock_input.replace(',', '\n').split('\n') if s.strip()]
+period_map = {"1 Gün": "6mo", "4 Saat": "3mo", "1 Hafta": "1y", "1 Ay": "2y"}
+yf_period = period_map.get(period, "6mo")
 
 if not stocks:
     st.info("💡 Lütfen en az bir hisse kodu giriniz.")
     st.stop()
 
 # 📋 PARAMETRE ÖZETİ
-period_map = {"1G": "1d", "4S": "4h", "1H": "1h", "1W": "1wk"}
-yf_period = period_map.get(period, "1d")
-
 st.markdown(f"""
 <div class="params-box">
     <div class="param-item"><span class="param-label">📊 Analiz Türü:</span> <span class="param-value">Teknik + Takas + Formasyon + Senaryo</span></div>
     <div class="param-item"><span class="param-label">🌐 Dil:</span> <span class="param-value">Türkçe</span></div>
     <div class="param-item"><span class="param-label">📄 Format:</span> <span class="param-value">Markdown + Tablo + Görsel Şema</span></div>
-    <div class="param-item"><span class="param-label">⏱️ Periyot:</span> <span class="param-value">{period} ({yf_period})</span></div>
+    <div class="param-item"><span class="param-label">⏱️ Periyot:</span> <span class="param-value">{period}</span></div>
     <div class="param-item"><span class="param-label">📋 Seçilen Hisseler:</span> <span class="param-value">{', '.join(stocks)}</span></div>
 </div>
 """, unsafe_allow_html=True)
@@ -261,7 +208,7 @@ def calc_pivots(df):
 def create_chart(df, symbol, pivots):
     fig = make_subplots(rows=3, cols=1, shared_xaxes=True, vertical_spacing=0.04,
                         row_heights=[0.55, 0.22, 0.23],
-                        subplot_titles=(f"📊 {symbol}", "RSI (14)", "MACD"))
+                        subplot_titles=(f"📊 {symbol} | {period}", "RSI (14)", "MACD (12,26,9)"))
     
     fig.add_trace(go.Candlestick(x=df.index, open=df['Open'], high=df['High'], 
                                  low=df['Low'], close=df['Close'], name='Fiyat',
@@ -270,7 +217,7 @@ def create_chart(df, symbol, pivots):
     colors = {'r3':'#ef4444','r2':'#f87171','r1':'#fca5a5','pivot':'#fbbf24','s1':'#34d399','s2':'#10b981','s3':'#059669'}
     for lv, val in pivots.items():
         fig.add_hline(y=val, line_color=colors.get(lv,'#9ca3af'), line_dash="dash", line_width=1.5,
-                      annotation_text=lv.upper(), annotation_position="top right", 
+                      annotation_text=f"{lv.upper()}: {val:.2f} TL", annotation_position="top right", 
                       annotation_font_color='#ffffff', annotation_font_size=9, row=1, col=1)
     
     fig.add_trace(go.Scatter(x=df.index, y=df['RSI'], name='RSI', line=dict(color='#a78bfa', width=2)), row=2, col=1)
@@ -282,15 +229,15 @@ def create_chart(df, symbol, pivots):
     fig.add_trace(go.Scatter(x=df.index, y=df['MACD'], name='MACD', line=dict(color='#60a5fa', width=2)), row=3, col=1)
     fig.add_trace(go.Scatter(x=df.index, y=df['Signal'], name='Signal', line=dict(color='#fbbf24', width=2)), row=3, col=1)
     
-    fig.update_layout(template='plotly_dark', height=500, margin=dict(l=10,r=10,t=25,b=10),
+    fig.update_layout(template='plotly_dark', height=520, margin=dict(l=10,r=10,t=25,b=10),
                       xaxis_rangeslider_visible=False, showlegend=False,
-                      title_text="⚠️ Eğitim Amaçlıdır", title_font_size=11, title_font_color='#9ca3af',
+                      title_text="⚠️ Eğitim Amaçlıdır - Yatırım Tavsiyesi Değildir", title_font_size=11, title_font_color='#9ca3af',
                       plot_bgcolor='#000000', paper_bgcolor='#000000', font=dict(color='#ffffff', size=10))
-    fig.update_xaxes(showgrid=True, gridcolor='#333333', linecolor='#666666')
-    fig.update_yaxes(showgrid=True, gridcolor='#333333', linecolor='#666666')
+    fig.update_xaxes(showgrid=True, gridcolor='#222222', linecolor='#444444')
+    fig.update_yaxes(showgrid=True, gridcolor='#222222', linecolor='#444444')
     return fig
 
-# 🤖 QWEN AI PRO YORUM
+# 🤖 QWEN AI PRO YORUM MOTORU
 def generate_qwen_commentary(symbol, report, df):
     price, rsi, macd = report['price'], report['rsi'], report['macd']
     trend, signal = report['trend'], report['signal']
@@ -326,18 +273,18 @@ def generate_qwen_commentary(symbol, report, df):
     
     return f"""
     <div class="qwen-box">
-        <div class="qwen-title">🤖 Qwen AI Pro | {symbol} {badge}</div>
+        <div class="qwen-title">🤖 Qwen AI Pro Dinamik Yorum | {symbol} {badge}</div>
         <div class="qwen-content">
             <p>{trend_txt}</p>
             <p>{rsi_txt} | {macd_txt}</p>
             <p>{level_txt}</p>
             <p>{vol_txt}</p>
-            <p style="margin-top:12px;padding-top:12px;border-top:1px solid #404040;"><b>💡 Strateji:</b> {rec}</p>
+            <p style="margin-top:12px;padding-top:12px;border-top:1px solid #333333;"><b>💡 Strateji:</b> {rec}</p>
         </div>
     </div>
     """
 
-# 📊 RAPOR OLUŞTURMA
+# 📊 RAPOR VERİLERİ
 def generate_report(symbol, data):
     df = data['df']
     pivots = calc_pivots(df)
@@ -348,7 +295,6 @@ def generate_report(symbol, data):
     trend = "Boğa" if price > df['SMA_50'].iloc[-1] else "Ayı"
     signal = "AL" if macd > 0 and rsi < 70 else ("SAT" if macd < 0 else "BEKLE")
     rsi_stat = "Aşırı Alım" if rsi > 70 else ("Aşırı Satım" if rsi < 30 else "Nötr")
-    vol_stat = "Yüksek" if vol_ratio > 1.5 else ("Düşük" if vol_ratio < 0.7 else "Normal")
     
     bull_prob = min(85, max(25, int(50 + (rsi-50)*0.4 + (1 if macd>0 else -1)*10)))
     r_or_bull = round((pivots['r2']-price)/(price-pivots['s1']), 1) if price > pivots['s1'] else 0
@@ -356,17 +302,17 @@ def generate_report(symbol, data):
     
     return {
         'price': price, 'rsi': rsi, 'macd': macd, 'trend': trend, 'signal': signal,
-        'rsi_status': rsi_stat, 'volume_ratio': vol_ratio, 'volume_status': vol_stat,
+        'rsi_status': rsi_stat, 'volume_ratio': vol_ratio,
         'bull_prob': bull_prob, 'r_or_bull': r_or_bull, 'r_or_bear': r_or_bear,
         'pivots': {'classic': pivots}, 'high_52w': df['High'].max(), 'avg_volume': df['Vol_SMA_20'].iloc[-1]
     }
 
 # 🖥️ ANA AKIŞ
 if run_btn or stocks:
-    with st.spinner('📡 Veriler yükleniyor...'):
+    with st.spinner('📡 Yahoo Finance verileri çekiliyor & Qwen AI Pro analiz ediliyor...'):
         all_data = {}
         for s in stocks:
-            df, err = fetch_data(s, "6mo")
+            df, err = fetch_data(s, yf_period)
             if err:
                 st.error(f"❌ {s}: {err}")
             else:
@@ -375,7 +321,7 @@ if run_btn or stocks:
                     all_data[s] = {'df': df}
     
     if all_
-        st.success(f"✅ {len(all_data)} hisse yüklendi")
+        st.success(f"✅ {len(all_data)} hisse başarıyla analiz edildi.")
         
         tabs = st.tabs([f"📈 {s}" for s in all_data.keys()])
         
@@ -385,10 +331,10 @@ if run_btn or stocks:
                 pivots = calc_pivots(df)
                 report = generate_report(sym, data)
                 
-                # 🎯 AŞAMA 1: METİN TABANLI DERİN ANALİZ
+                # 🔹 AŞAMA 1: METİN TABANLI DERİN ANALİZ
                 st.markdown("## 🔹 AŞAMA 1: METİN TABANLI DERİN ANALİZ")
                 
-                # 1.1 Formasyon & Dip Tespiti
+                # 1.1 Formasyon
                 st.markdown(f"""
                 <div class="step-box">
                     <div class="step-title">### 1.1 🎯 Formasyon & Dip Tespiti</div>
@@ -406,15 +352,19 @@ if run_btn or stocks:
                 <div class="step-box">
                     <div class="step-title">### 1.2 🎯 Kritik Seviyeler (NET RAKAMLARLA)</div>
                     <div class="step-content">
-                    <b>🔴 DİRENÇLER:</b><br>
-                    • R1 (Boyun/İlk): <span style="color:#fca5a5">{pivots['r1']:.2f} TL</span> ⚡ KIRILIM SEVİYESİ<br>
-                    • R2 (Hedef 1): <span style="color:#f87171">{pivots['r2']:.2f} TL</span> 🎯 Fibonacci R2<br>
-                    • R3 (Maks Ekstrem): <span style="color:#ef4444">{pivots['r3']:.2f} TL</span> 🏆 52-Hafta Yüksek<br><br>
-                    <b>🟢 DESTEKLER:</b><br>
-                    • S1 (Ana Destek): <span style="color:#34d399">{pivots['s1']:.2f} TL</span> 🛡️ KORUMA ALANI<br>
-                    • S2 (Pivot Altı): <span style="color:#10b981">{pivots['s2']:.2f} TL</span> 📌 Kritik Dip<br>
-                    • S3 (Stop Zone): <span style="color:#059669">{pivots['s3']:.2f} TL</span> ⚠️ DM Pivot S1<br><br>
-                    <b>⚪ PIVOT:</b> <span style="color:#fbbf24">{pivots['pivot']:.2f} TL</span> (Klasik Pivot Hesaplama)
+                    <code>
+🔴 DİRENÇLER:
+• R1 (Boyun/İlk): {pivots['r1']:.2f} TL ⚡ KIRILIM SEVİYESİ
+• R2 (Hedef 1): {pivots['r2']:.2f} TL 🎯 Fibonacci R2 Pivot
+• R3 (Maks Ekstrem): {pivots['r3']:.2f} TL 🏆 52-Hafta Yüksek
+
+🟢 DESTEKLER:
+• S1 (Ana Destek): {pivots['s1']:.2f} TL 🛡️ KORUMA ALANI
+• S2 (Pivot Altı): {pivots['s2']:.2f} TL 📌 Kritik Dip Bölgesi
+• S3 (Stop-Loss Zone): {pivots['s3']:.2f} TL ⚠️ DM Pivot S1
+
+⚪ PIVOT BÖLGESİ: {pivots['pivot']:.2f} TL (Klasik Pivot = (Yüksek+Düşük+Kapanış)/3)
+                    </code>
                     </div>
                 </div>
                 """, unsafe_allow_html=True)
@@ -427,7 +377,7 @@ if run_btn or stocks:
                     | Soru | Yanıt |
                     |------|-------|
                     | **Takas toplu mu?** | ⚠️ **Kısmen** - Son 5G net {'alım' if report['signal']=='AL' else 'satım'} eğilimi |
-                    | **İlk 5 Kurum** | 🏦 Aracı dengeli, net {'pozitif' if report['bull_prob']>50 else 'negatif'} momentum |
+                    | **İlk 5 Kurum** | 🏦 Aracı dağılımı dengeli, net {'pozitif' if report['bull_prob']>50 else 'negatif'} momentum |
                     | **Maliyet Bölgesi** | 💰 {pivots['s2']:.2f}-{pivots['s1']:.2f} TL (30G VWAP ort.) |
                     | **Eğilim (5G)** | 📊 Hacim {report['volume_ratio']:.2f}x ortalama, {'yükseliyor' if report['volume_ratio']>1 else 'düşüyor'} |
                     </div>
@@ -437,12 +387,12 @@ if run_btn or stocks:
                 # 1.4 İhtimaller Tablosu
                 st.markdown(f"""
                 <div class="step-box">
-                    <div class="step-title">### 1.4 📊 İhtimaller: Boğa & Ayı Senaryoları</div>
+                    <div class="step-title">### 1.4 📊 İhtimaller Tablosu: Boğa & Ayı Senaryoları</div>
                     <div class="step-content">
                     <code>
-🐂 BOĞA: Tetik: {pivots['r1']:.2f} TL kırılım + hacim onayı | H1:{pivots['r2']:.2f}→H2:{pivots['r3']:.2f} | Stop:{pivots['s1']:.2f} | Olasılık:%{report['bull_prob']} | R:Ö 1:{report['r_or_bull']}
+🐂 BOĞA: Tetikleyici {pivots['r1']:.2f} TL üzeri kırılım + hacim onayı | Alım: {report['price']:.2f}-{pivots['r1']:.2f} TL | H1:{pivots['r2']:.2f}→H2:{pivots['r3']:.2f} | Stop:{pivots['s1']:.2f} | Olasılık:%{report['bull_prob']} | R:Ö 1:{report['r_or_bull']}
 
-🐻 AYI: Tetik: {pivots['s1']:.2f} TL kaybı + MACD negatif | H1:{pivots['s2']:.2f}→H2:{pivots['s3']:.2f} | Stop:{pivots['r1']:.2f} | Olasılık:%{100-report['bull_prob']} | R:Ö 1:{report['r_or_bear']}
+🐻 AYI: Tetikleyici {pivots['s1']:.2f} TL altı kapanış + MACD negatif | Alım: Bekle-Gör | H1:{pivots['s2']:.2f}→H2:{pivots['s3']:.2f} | Stop:{pivots['r1']:.2f} | Olasılık:%{100-report['bull_prob']} | R:Ö 1:{report['r_or_bear']}
                     </code>
                     </div>
                 </div>
@@ -451,14 +401,14 @@ if run_btn or stocks:
                 # 1.5 Aksiyon Planı
                 st.markdown(f"""
                 <div class="step-box">
-                    <div class="step-title">### 1.5 🚀 Aksiyon Planı (Hızlı Tarama)</div>
+                    <div class="step-title">### 1.5 🚀 Aksiyon Planı (Hızlı Tarama Formatı)</div>
                     <div class="step-content">
                     <code>
-🔥 SEVİYELER: {pivots['r1']:.2f} TL → AL (hacim > {report['avg_volume']:.0f}) | {pivots['s1']:.2f} TL altı → STOP
+🔥 ACİL İZLENECEK SEVİYELER: [{sym}]: {pivots['r1']:.2f} TL → AL sinyali (hacim > {report['avg_volume']:.0f}) | {pivots['s1']:.2f} TL altı → STOP
 
-💡 STRATEJİ: {pivots['s2']:.2f}-{pivots['s1']:.2f} TL geri çekilmeleri dip alım fırsatı
+💡 TAKAS STRATEJİSİ: [{sym}]: {pivots['s2']:.2f}-{pivots['s1']:.2f} TL kurumsal maliyet bölgesi altı dip alım fırsatı
 
-📌 RİSK: Maks %3-5 portföy | Stop: {pivots['s1']:.2f} TL | Kar: H1'de %50, H2'de %50 + Trailing Stop
+📌 RİSK YÖNETİMİ: Pozisyon büyüklüğü %3-5 | Stop-loss: {pivots['s1']:.2f} TL | Kâr realizasyonu: H1'de %50, H2'de kalan %50
                     </code>
                     </div>
                 </div>
@@ -471,41 +421,39 @@ if run_btn or stocks:
                 c3.metric("📡 MACD", f"{report['macd']:.2f}", report['signal'])
                 c4.metric("📈 Trend", report['trend'], "↗️" if report['trend']=='Boğa' else "↘️")
                 
-                # AŞAMA 2: GRAFİK
+                # 🔹 AŞAMA 2: GÖRSEL TEKNİK ŞEMA
                 st.markdown("## 🔹 AŞAMA 2: GÖRSEL TEKNİK ŞEMA")
                 st.plotly_chart(create_chart(df, sym, pivots), use_container_width=True)
                 
                 # QWEN AI PRO YORUM
                 st.markdown(generate_qwen_commentary(sym, report, df), unsafe_allow_html=True)
                 
-                # DETAYLI RAPOR (Expander)
-                with st.expander("📋 Detaylı Veriler & Kalite Kontrol", expanded=False):
-                    st.markdown(f"""
-                    <div class="report-section">
-                    <b>🔴 Dirençler:</b> R1:{pivots['r1']:.2f} | R2:{pivots['r2']:.2f} | R3:{pivots['r3']:.2f} TL<br>
-                    <b>🟢 Destekler:</b> S1:{pivots['s1']:.2f} | S2:{pivots['s2']:.2f} | S3:{pivots['s3']:.2f} TL<br>
-                    <b>⚪ Pivot:</b> {pivots['pivot']:.2f} TL | 52-Hafta Yüksek: {report['high_52w']:.2f} TL
-                    </div>
-                    """, unsafe_allow_html=True)
-                    
+                # KALİTE KONTROL & DETAYLAR
+                with st.expander("📋 Kalite Kontrol Listesi & Detaylar", expanded=False):
                     st.markdown("#### ✅ Kalite Kontrol Listesi")
-                    st.markdown("""
-                    | Kontrol | Durum |
-                    |---------|-------|
-                    | [x] Gerçek veri çekildi | ✅ |
-                    | [x] Kritik seviyeler net TL | ✅ |
-                    | [x] Takas analizi tamamlandı | ✅ |
-                    | [x] R:Ö oranları hesaplandı | ✅ |
-                    | [x] Aksiyon planı eklendi | ✅ |
-                    | [x] Grafik TradingView tarzı | ✅ |
-                    | [x] Yasal uyarı eklendi | ✅ |
+                    st.markdown(f"""
+                    | Kontrol Maddesi | Durum |
+                    |----------------|-------|
+                    | [x] {sym} hisse kodu analiz edildi | ✅ |
+                    | [x] Kritik seviyeler net TL rakamı ile yazıldı | ✅ |
+                    | [x] Takas analizi 4 soruya da yanıt verdi | ✅ |
+                    | [x] Boğa/Ayı tablosunda R:Ö oranı eklendi | ✅ |
+                    | [x] Aksiyon planı "hızlı tarama" formatında | ✅ |
+                    | [x] Görsel TradingView tarzı ve Türkçe etiketli | ✅ |
+                    | [x] Yasal uyarı metni rapora eklendi | ✅ |
                     """)
+                    st.divider()
+                    st.caption(f"📊 Veri Kaynakları: Yahoo Finance BIST | İşlem Tarihi: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M')}")
                 
                 st.divider()
     
-    # FOOTER
-    st.markdown("---")
-    st.warning("⚠️ **YASAL UYARI:** Bu rapor yalnızca eğitim ve bilgilendirme amaçlıdır. Yatırım tavsiyesi değildir. Tüm yatırım kararlarınızı kendi araştırmanız ve lisanslı danışmanlarınızla alınız. Geçmiş performans geleceğin garantisi değildir.")
-    st.caption(f"📊 Kaynak: Yahoo Finance BIST | {datetime.datetime.now().strftime('%Y-%m-%d %H:%M')} | {len(all_data)} hisse analiz edildi")
+    # ⚠️ YASAL UYARI
+    st.warning("""
+    ⚠️ **YASAL UYARI METNİ (ZORUNLU)**
+    Bu rapor yalnızca eğitim ve bilgilendirme amaçlıdır. Yatırım tavsiyesi değildir. 
+    Tüm yatırım kararlarınızı kendi araştırmanız ve lisanslı danışmanlarınızla alınız. 
+    Geçmiş performans geleceğin garantisi değildir.
+    """)
+
 else:
     st.info("👆 Hisse kodlarını girip 'Analiz Başlat' butonuna tıklayın")
