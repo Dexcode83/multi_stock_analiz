@@ -19,12 +19,13 @@ st.markdown("""
         border-radius: 6px;
         margin: 10px 0 20px 0;
         font-family: 'Segoe UI', sans-serif;
+        color: #d1d4dc;
     }
     code {background-color: #1e222d; padding: 4px 6px; border-radius: 4px;}
 </style>
 """, unsafe_allow_html=True)
 
-st.title("🤖 QWEN AI PRO | BIST TEKNIK ANALİZ TERMINALİ")
+st.title("🤖 QWEN AI PRO | BIST TEKNİK ANALİZ")
 st.caption("Gerçek Piyasa Verileri | Yapay Zeka Destekli Dinamik Yorum")
 
 # 🔍 Giriş Alanı
@@ -94,39 +95,28 @@ def generate_qwen_insight(symbol, df, pivots):
     macd_sig = df['Signal'].iloc[-1]
     sma20 = df['SMA_20'].iloc[-1]
     
-    # 1. Trend Tespiti
     trend = "YÜKSELİŞ" if price > sma20 else "DÜŞÜŞ"
     
-    # 2. Momentum
     if rsi > 70: rsi_stat = "Aşırı Alım (Düzeltme Beklenir) ⚠️"
     elif rsi < 30: rsi_stat = "Aşırı Satım (Tepki Yükselişi Olabilir) 🛒"
     else: rsi_stat = "Normal Bölge"
     
-    # 3. MACD Sinyali
     signal = "AL" if macd_val > macd_sig else "SAT"
     
-    # 4. Seviye Kontrolü
-    dist_r1 = (pivots['r1'] - price) / price
-    dist_s1 = (price - pivots['s1']) / price
-    
-    # 📝 Dinamik Metin Üretimi
     text = f"""🤖 <b>QWEN AI PRO ANALİZ ({symbol})</b><br><br>"""
     text += f"📊 <b>Trend:</b> Fiyat SMA20 ({sma20:.2f} TL) seviyesinin {'üzerinde' if price > sma20 else 'altında'}, genel yapı <b>{trend}</b> yönlü.<br>"
     text += f"🚀 <b>Momentum:</b> RSI değeri <b>{rsi:.1f}</b>. Bu, {rsi_stat} bölgesidir.<br>"
-    text += f"📡 <b>Sinyal:</b> MACD çizgisi Signal çizgisinin {'üzerinde (POZİTIF)' if signal=='AL' else 'altında (NEGATIF)'}."
+    text += f"📡 <b>Sinyal:</b> MACD çizgisi Signal çizgisinin {'üzerinde (POZİTİF)' if signal=='AL' else 'altında (NEGATİF)'}.<br>"
     
-    # Akıllı Öneri Kısmı
-    text += f"<br><br>💡 <b>YAPAY ZEKA DEĞERLENDİRMESİ:</b><br>"
-    
+    text += f"<br>💡 <b>DEĞERLENDİRME:</b><br>"
     if price > sma20 and rsi < 70 and signal == "AL":
-        text += "✅ <b>GÜÇLÜ AL:</b> Trend yükseliş, momentum destekliyor ve kırılım sinyali var. Hedef: R1 ({:.2f} TL).".format(pivots['r1'])
+        text += "✅ <b>GÜÇLÜ AL:</b> Trend yükseliş, momentum destekliyor ve kırılım sinyali var."
     elif price < sma20 and rsi < 30:
-        text += "⚠️ <b>TEMKİLLİ OL:</b> Fiyat düşüş trendinde ancak aşırı satılmış. Kısa vadeli tepki alımı denenebilir ancak ana trend bozucu değil."
+        text += "⚠️ <b>TEMKİLLİ:</b> Fiyat düşüş trendinde ancak aşırı satılmış. Kısa vadeli tepki alımı denenebilir."
     elif price > pivots['r1']:
-        text += "🔥 <b>KIRILIM ONAYI:</b> Fiyat R1 direncini ({:.2f} TL) kırmış görünüyor. Yeni hedef R2 ({:.2f} TL).".format(pivots['r1'], pivots['r2'])
+        text += "🔥 <b>KIRILIM:</b> Fiyat R1 direncini ({:.2f} TL) kırmış görünüyor. Yeni hedef R2.".format(pivots['r1'])
     else:
-        text += "⏳ <b>BEKLE/GÖR:</b> Net bir sinyal yok. Fiyatın {} bölgesine yaklaşmasını bekle.".format("R1 Direnci" if dist_r1 < dist_s1 else "S1 Desteği")
-
+        text += "⏳ <b>BEKLE/GÖR:</b> Net bir sinyal yok. Fiyatın direnç/direkt desteği test etmesini bekle."
     return text
 
 # 📈 TradingView Tarzı Grafik
@@ -173,36 +163,34 @@ if run_btn or stocks:
                 if len(df) > 20:
                     all_data[s] = {'df': df, 'pivots': calc_pivots(df)}
     
-    if all_
+    # ✅ HATA DÜZELTİLDİ: "if all_" yerine "if all_data:" olarak güncellendi
+    if all_data:
         tabs = st.tabs([f"📈 {s}" for s in all_data.keys()])
         for i, (sym, data) in enumerate(all_data.items()):
             with tabs[i]:
                 df, pivots = data['df'], data['pivots']
                 price = df['Close'].iloc[-1]
                 
-                # Metrikler
                 c1,c2,c3,c4 = st.columns(4)
                 c1.metric("Fiyat", f"{price:.2f} TL")
                 c2.metric("RSI(14)", f"{df['RSI'].iloc[-1]:.2f}")
                 c3.metric("MACD", f"{df['MACD'].iloc[-1]:.2f}")
                 c4.metric("Trend", "Boğa 🐂" if price > df['SMA_50'].iloc[-1] else "Ayı 🐻")
                 
-                # 1. TradingView Grafik
                 st.plotly_chart(create_chart(df, sym, pivots), use_container_width=True)
                 
-                # 2. QWEN AI PRO YORUMU (Yeni Eklenen Kısım)
                 ai_comment = generate_qwen_insight(sym, df, pivots)
                 st.markdown(f'<div class="ai-box">{ai_comment}</div>', unsafe_allow_html=True)
                 
-                # 3. Detaylı Rapor (Eski Halinden Sadeliği Korunmuş)
                 st.markdown("### 📋 Detaylı Veriler")
                 st.code(f"""
 🔴 DİRENÇLER: R1({pivots['r1']:.2f}) | R2({pivots['r2']:.2f}) | R3({pivots['r3']:.2f})
 🟢 DESTEKLER: S1({pivots['s1']:.2f}) | S2({pivots['s2']:.2f}) | S3({pivots['s3']:.2f})
 ⚪ PIVOT: {pivots['pivot']:.2f} TL
                 """)
-                
                 st.divider()
-                
-        st.warning("⚠️ **YASAL UYARI:** Bu rapor yalnızca eğitim amaçlıdır. Qwen AI Pro otomatik algoritma ile oluşturulmuştur.")
-        st.caption(f"📊 Kaynak: Yahoo Finance BIST | Tarih: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M')}")
+    else:
+        st.error("Hiçbir hisse için geçerli veri alınamadı.")
+        
+    st.warning("⚠️ **YASAL UYARI:** Bu rapor yalnızca eğitim amaçlıdır. Qwen AI Pro otomatik algoritma ile oluşturulmuştur.")
+    st.caption(f"📊 Kaynak: Yahoo Finance BIST | Tarih: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M')}")
