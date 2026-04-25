@@ -70,7 +70,7 @@ st.markdown("""
     div[data-testid="stSelectbox"] > div > div[data-baseweb="select"] input,
     div[data-testid="stSelectbox"] > div > div[data-baseweb="select"] p,
     div[data-testid="stSelectbox"] > div > div[data-baseweb="select"] span {
-        color: #ffffff !important;
+        color: #000000 !important;
     }
     
     /* Açılır liste (Dropdown) */
