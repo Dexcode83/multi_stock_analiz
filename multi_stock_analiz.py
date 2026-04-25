@@ -14,10 +14,9 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# 🎨 DÜZELTİLMİŞ CSS: DROPDOWN YAZILARI BEYAZ GÖRÜNÜR
+# 🎨 GÜNCELLENMİŞ CSS: DROPDOWN %100 GÖRÜNÜR & SİYAH TEMA
 st.markdown("""
 <style>
-    /* ===== GENEL TEMA ===== */
     .main, .stApp {background-color: #000000 !important;}
     body, .stMarkdown, .stMetric, h1, h2, h3, h4, p, span, div, label, td, th {
         color: #ffffff !important;
@@ -25,7 +24,6 @@ st.markdown("""
     }
     .stCaption, small {color: #d1d5db !important;}
 
-    /* ===== KUTULAR ===== */
     .role-box, .params-box, .step-box, .qwen-box, .report-section {
         background: #111111; border: 1px solid #333333; border-radius: 8px; padding: 14px; margin: 10px 0;
     }
@@ -39,71 +37,42 @@ st.markdown("""
     .param-label {color: #93c5fd !important; font-weight: 600;}
     .param-value {color: #34d399 !important; font-weight: 500;}
 
-    /* ===== METRİKLER ===== */
     div[data-testid="stMetric"] {background-color: #111111; padding: 12px 8px; border-radius: 8px; border: 1px solid #333333; text-align: center;}
     div[data-testid="stMetricValue"] {font-size: 1.4rem !important; color: #ffffff !important; font-weight: 600;}
     div[data-testid="stMetricLabel"] {font-size: 0.85rem !important; color: #a3a3a3 !important;}
 
-    /* ===== BADGE'LER ===== */
     .signal-badge {display: inline-block; padding: 4px 12px; border-radius: 14px; font-size: 0.85rem; font-weight: 700; color: #ffffff !important;}
     .signal-buy {background: linear-gradient(135deg, #059669, #10b981); border: 1px solid #34d399;}
     .signal-sell {background: linear-gradient(135deg, #dc2626, #ef4444); border: 1px solid #f87171;}
     .signal-wait {background: linear-gradient(135deg, #b45309, #f59e0b); border: 1px solid #fbbf24;}
 
-    /* ===== KOD BLOKLARI ===== */
     pre, code {background-color: #0a0a0a !important; color: #e5e7eb !important; border: 1px solid #333333 !important;}
     code {padding: 6px 10px; border-radius: 6px; font-size: 0.9em; display: block; overflow-x: auto;}
 
-    /* ===== BUTONLAR ===== */
     .stButton > button {
         width: 100%; min-height: 48px; font-size: 1rem; font-weight: 600; border-radius: 8px;
         background: linear-gradient(135deg, #1d4ed8, #3b82f6) !important; color: #ffffff !important; border: none !important;
     }
 
-    /* ✅ DÜZELTİLDİ: DROPDOWN YAZILARI BEYAZ GÖRÜNÜR */
+    /* ✅ DROPDOWN MENÜ TAM GÖRÜNÜR */
     div[data-testid="stSelectbox"] > div > div[data-baseweb="select"] {
-        background-color: #111111 !important;
-        border: 1px solid #404040 !important;
-        border-radius: 8px !important;
+        background-color: #1a1a1a !important; border: 1px solid #404040 !important; border-radius: 8px !important;
     }
+    div[data-testid="stSelectbox"] > div > div[data-baseweb="select"] input,
+    div[data-testid="stSelectbox"] > div > div[data-baseweb="select"] p,
+    div[data-testid="stSelectbox"] > div > div[data-baseweb="select"] span { color: #ffffff !important; }
     
-    /* SEÇİLİ ÖĞE (kapalı kutudaki yazı) - BEYAZ */
-    div[data-testid="stSelectbox"] > div > div[data-baseweb="select"] div[role="button"] span {
-        color: #ffffff !important;
-    }
-    
-    /* Açılır liste (Dropdown) - SİYAH ARKAPLAN */
     [data-baseweb="menu"] {
-        background-color: #1a1a1a !important;
-        border: 1px solid #404040 !important;
-        border-radius: 8px !important;
-        box-shadow: 0 8px 24px rgba(0,0,0,0.6) !important;
-        padding: 4px 0 !important;
+        background-color: #1a1a1a !important; border: 1px solid #404040 !important; border-radius: 8px !important;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.6) !important; padding: 4px 0 !important;
     }
-    
-    /* Liste öğeleri - BEYAZ YAZI */
-    [data-baseweb="menu"] > div {
-        background-color: #1a1a1a !important;
-    }
-    [data-baseweb="menu-item"] {
-        color: #ffffff !important;
-        background-color: #1a1a1a !important;
-        padding: 10px 16px !important;
-    }
-    [data-baseweb="menu-item"]:hover {
-        background-color: #2563eb !important;
-        color: #ffffff !important;
-    }
-    [data-baseweb="menu-item"][aria-selected="true"] {
-        background-color: #1e3a8a !important;
-        color: #ffffff !important;
-    }
+    [data-baseweb="menu-item"] { color: #ffffff !important; background-color: #1a1a1a !important; padding: 10px 16px !important; }
+    [data-baseweb="menu-item"]:hover { background-color: #2563eb !important; color: #ffffff !important; }
+    [data-baseweb="menu-item"][aria-selected="true"] { background-color: #1e3a8a !important; color: #ffffff !important; }
 
-    /* ===== DİĞER BİLEŞENLER ===== */
     .stAlert {background-color: #111111 !important; border: 2px solid #333333 !important; color: #ffffff !important; border-radius: 8px;}
     hr {border-color: #333333 !important; opacity: 0.5;}
     
-    /* ===== MOBİL UYUM ===== */
     @media (max-width: 768px) {
         div[data-testid="column"] {min-width: 100% !important; margin-bottom: 10px;}
         .stMetric {margin-bottom: 10px;}
@@ -115,7 +84,7 @@ st.markdown("""
 
 st.markdown('<div style="text-align:center;padding:8px 0;">', unsafe_allow_html=True)
 st.title("🎯 QWEN AI PRO | BİST TEKNİK + TAKAS ANALİZ")
-st.caption("📱 Mobil Uyumlu | ⚫ Siyah Tema | 📊 Gerçek Veri | 🤖 Yapay Zeka Destekli")
+st.caption("📱 Mobil Uyumlu | ⚫ Siyah Tema | 📊 Gerçek Veri | 🤖 Dinamik Formasyon Tespiti")
 st.markdown('</div>', unsafe_allow_html=True)
 
 st.markdown("""
@@ -176,6 +145,62 @@ def calc_indicators(df):
     df['Signal'] = df['MACD'].ewm(9).mean()
     df['Hist'] = df['MACD'] - df['Signal']
     return df.dropna()
+
+# 🆕 DİNAMİK FORMASYON TESPİT MOTORU
+def detect_pattern(df):
+    """Fiyat action, hacim ve volatiliteye göre dinamik formasyon tespit eder."""
+    recent = df.tail(30).copy()
+    prices = recent['Close'].values
+    highs = recent['High'].values
+    lows = recent['Low'].values
+    volumes = recent['Volume'].values
+    rsi_vals = recent['RSI'].values
+
+    # Temel metrikler
+    price_change = (prices[-1] - prices[0]) / prices[0]
+    vol_ratio = np.mean(volumes[-5:]) / np.mean(volumes[-10:-5]) if np.mean(volumes[-10:-5]) > 0 else 1
+    volatility = np.std(prices) / np.mean(prices)
+
+    # Trend & Momentum
+    is_uptrend = prices[-1] > prices[-10] > prices[-20]
+    is_downtrend = prices[-1] < prices[-10] < prices[-20]
+    is_sideways = abs(price_change) < 0.05 and volatility < 0.03
+
+    # Formasyon Mantığı
+    pattern, confidence = "Konsolidasyon", 60
+
+    if is_uptrend:
+        if volatility < 0.02 and vol_ratio > 1.1:
+            pattern, confidence = "Boğa Bayrağı / Flama", 80
+        elif np.max(highs[-10:]) <= np.max(highs[:-10]) * 1.005 and np.min(lows[-10:]) > np.min(lows[:-10]):
+            pattern, confidence = "Yükselen Üçgen", 85
+        elif np.max(highs[-10:]) > np.max(highs[:-10]) * 1.01 and np.min(lows[-10:]) > np.min(lows[:-10]):
+            pattern, confidence = "Yükselen Kanal", 75
+    elif is_downtrend:
+        if volatility < 0.02 and vol_ratio > 1.1:
+            pattern, confidence = "Ayı Bayrağı", 75
+        elif np.min(lows[-10:]) >= np.min(lows[:-10]) * 0.995 and np.max(highs[-10:]) < np.max(highs[:-10]):
+            pattern, confidence = "Düşen Üçgen", 85
+        else:
+            pattern, confidence = "Düşen Kanal", 70
+    elif is_sideways:
+        low1 = np.min(lows[-20:-10])
+        low2 = np.min(lows[-10:])
+        if abs(low1 - low2) / low1 < 0.02 and rsi_vals[-1] > 40:
+            pattern, confidence = "TOBO (Çift Dip)", 85
+        elif price_change > -0.03 and vol_ratio < 0.9:
+            pattern, confidence = "Toplama / Akümülasyon", 75
+        else:
+            pattern, confidence = "Yatay Kanal / Range", 65
+    else:
+        if rsi_vals[-1] > 60 and vol_ratio > 1.2:
+            pattern, confidence = "Yükselen Momentum Breakout", 70
+        elif rsi_vals[-1] < 35 and vol_ratio > 1.3:
+            pattern, confidence = "Dağıtım / Selling Climax", 70
+        else:
+            pattern, confidence = "Belirsiz / Kararsız Bölge", 60
+
+    return pattern, confidence
 
 def calc_pivots(df):
     recent = df.tail(20)
@@ -251,6 +276,10 @@ def generate_report(symbol, data):
     trend = "Boğa" if price > df['SMA_50'].iloc[-1] else "Ayı"
     signal = "AL" if macd > 0 and rsi < 70 else ("SAT" if macd < 0 else "BEKLE")
     rsi_stat = "Aşırı Alım" if rsi > 70 else ("Aşırı Satım" if rsi < 30 else "Nötr")
+    
+    # ✅ DİNAMİK FORMASYON ÇAĞRISI
+    formasyon_tipi, formasyon_guven = detect_pattern(df)
+    
     bull_prob = min(85, max(25, int(50 + (rsi-50)*0.4 + (1 if macd>0 else -1)*10)))
     r_or_bull = round((pivots['r2']-price)/(price-pivots['s1']), 1) if price > pivots['s1'] else 0
     r_or_bear = round((price-pivots['s2'])/(pivots['r1']-price), 1) if pivots['r1'] > price else 0
@@ -258,7 +287,8 @@ def generate_report(symbol, data):
         'price': price, 'rsi': rsi, 'macd': macd, 'trend': trend, 'signal': signal,
         'rsi_status': rsi_stat, 'volume_ratio': vol_ratio,
         'bull_prob': bull_prob, 'r_or_bull': r_or_bull, 'r_or_bear': r_or_bear,
-        'pivots': {'classic': pivots}, 'high_52w': df['High'].max(), 'avg_volume': df['Vol_SMA_20'].iloc[-1]
+        'pivots': {'classic': pivots}, 'high_52w': df['High'].max(), 'avg_volume': df['Vol_SMA_20'].iloc[-1],
+        'formasyon': formasyon_tipi, 'formasyon_guven': formasyon_guven
     }
 
 # 🖥️ ANA AKIŞ
@@ -272,7 +302,7 @@ if run_btn or stocks:
                 df = calc_indicators(df)
                 if len(df) > 20: all_data[s] = {'df': df}
         
-        if all_data:
+        if all_
             st.success(f"✅ {len(all_data)} hisse başarıyla analiz edildi.")
             tabs = st.tabs([f"📈 {s}" for s in all_data.keys()])
             for i, (sym, data) in enumerate(all_data.items()):
@@ -281,16 +311,19 @@ if run_btn or stocks:
                     pivots = calc_pivots(df)
                     report = generate_report(sym, data)
                     st.markdown("## 🔹 AŞAMA 1: METİN TABANLI DERİN ANALİZ")
+                    
+                    # ✅ DİNAMİK FORMASYON KULLANILDI
                     st.markdown(f"""
                     <div class="step-box">
                         <div class="step-title">### 1.1 🎯 Formasyon & Dip Tespiti</div>
                         <div class="step-content">
                         • <b>Dip Çalışması:</b> RSI {'pozitif uyumsuzluk' if report['rsi']<40 and report['trend']=='Boğa' else 'nötr'} sinyali, hacim {'onayı mevcut' if report['volume_ratio']>1 else 'bekleniyor'}<br>
                         • <b>Akümülasyon Bölgesi:</b> {pivots['s2']:.2f} - {pivots['s1']:.2f} TL aralığında kurumsal toplama<br>
-                        • <b>Formasyon Tipi:</b> {'Yükselen Üçgen' if report['trend']=='Boğa' else 'Düşen Kanal'} + Konsolidasyon<br>
-                        • <b>Tamamlanma:</b> %60-70 | Teyit: {pivots['r1']:.2f} TL üzerinde 2 gün kapanış + hacim > {report['avg_volume']:.0f}
+                        • <b>Formasyon Tipi:</b> <span style="color:#fbbf24; font-weight:bold;">{report['formasyon']}</span> (Güven: %{report['formasyon_guven']})<br>
+                        • <b>Tamamlanma:</b> %{report['formasyon_guven']-10} | Teyit: {pivots['r1']:.2f} TL üzerinde 2 gün kapanış + hacim > {report['avg_volume']:.0f}
                         </div>
                     </div>""", unsafe_allow_html=True)
+                    
                     st.markdown(f"""
                     <div class="step-box">
                         <div class="step-title">### 1.2 🎯 Kritik Seviyeler (NET RAKAMLARLA)</div>
