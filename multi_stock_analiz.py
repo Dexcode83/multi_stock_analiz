@@ -47,7 +47,6 @@ st.markdown("""
         background: linear-gradient(135deg, #1d4ed8, #3b82f6) !important; color: #ffffff !important; border: none !important;
     }
     
-    /* Tıklanabilir Periyot Butonları (Radio) */
     div[data-testid="stRadio"] label {
         background-color: #1a1a1a !important;
         border: 1px solid #404040 !important;
@@ -63,7 +62,6 @@ st.markdown("""
         box-shadow: 0 0 10px rgba(59, 130, 246, 0.3);
     }
 
-    /* Tablolar */
     table {width: 100%; border-collapse: collapse; margin: 10px 0; background-color: #111111; border-radius: 8px; overflow: hidden;}
     th {background-color: #1a1a1a; color: #93c5fd; padding: 10px; text-align: left; border-bottom: 2px solid #333333; font-weight: 600;}
     td {background-color: #111111; color: #f3f4f6; padding: 8px 10px; border-bottom: 1px solid #222222;}
@@ -84,7 +82,7 @@ st.markdown("""
 
 st.markdown('<div style="text-align:center;padding:8px 0;">', unsafe_allow_html=True)
 st.title("🎯 QWEN AI PRO | BİST TEKNİK + TAKAS ANALİZ")
-st.caption("📱 Mobil Uyumlu | ⚫ Siyah Tema | 📊 Tablolu Rapor | 🤖 Dinamik Formasyon")
+st.caption("📱 Mobil Uyumlu | ⚫ Siyah Tema | 📊 Tablolu Rapor | 🤖 Profesyonel Formasyon Motoru")
 st.markdown('</div>', unsafe_allow_html=True)
 
 st.markdown("""
@@ -128,6 +126,7 @@ def calc_indicators(df):
     df['SMA_20'] = df['Close'].rolling(20).mean()
     df['SMA_50'] = df['Close'].rolling(50).mean()
     df['Vol_SMA_20'] = df['Volume'].rolling(20).mean()
+    df['ATR'] = (df['High'] - df['Low']).rolling(14).mean() # Volatilite ölçüsü
     delta = df['Close'].diff()
     gain = delta.where(delta > 0, 0).rolling(14).mean()
     loss = (-delta.where(delta < 0, 0)).rolling(14).mean()
@@ -137,34 +136,121 @@ def calc_indicators(df):
     df['Hist'] = df['MACD'] - df['Signal']
     return df.dropna()
 
+# 🆕 PROFESYONEL FORMASYON TESPİT MOTORU
 def detect_pattern(df):
-    recent = df.tail(30).copy()
-    prices, highs, lows, volumes, rsi_vals = recent['Close'].values, recent['High'].values, recent['Low'].values, recent['Volume'].values, recent['RSI'].values
-    price_change = (prices[-1] - prices[0]) / prices[0]
-    vol_ratio = np.mean(volumes[-5:]) / np.mean(volumes[-10:-5]) if np.mean(volumes[-10:-5]) > 0 else 1
-    volatility = np.std(prices) / np.mean(prices)
-    is_uptrend = prices[-1] > prices[-10] > prices[-20]
-    is_downtrend = prices[-1] < prices[-10] < prices[-20]
-    is_sideways = abs(price_change) < 0.05 and volatility < 0.03
-    pattern, confidence = "Konsolidasyon", 60
-    if is_uptrend:
-        if volatility < 0.02 and vol_ratio > 1.1: pattern, confidence = "Boğa Bayrağı / Flama", 80
-        elif np.max(highs[-10:]) <= np.max(highs[:-10]) * 1.005 and np.min(lows[-10:]) > np.min(lows[:-10]): pattern, confidence = "Yükselen Üçgen", 85
-        else: pattern, confidence = "Yükselen Kanal", 75
-    elif is_downtrend:
-        if volatility < 0.02 and vol_ratio > 1.1: pattern, confidence = "Ayı Bayrağı", 75
-        elif np.min(lows[-10:]) >= np.min(lows[:-10]) * 0.995 and np.max(highs[-10:]) < np.max(highs[:-10]): pattern, confidence = "Düşen Üçgen", 85
-        else: pattern, confidence = "Düşen Kanal", 70
-    elif is_sideways:
-        low1, low2 = np.min(lows[-20:-10]), np.min(lows[-10:])
-        if abs(low1 - low2) / low1 < 0.02 and rsi_vals[-1] > 40: pattern, confidence = "TOBO (Çift Dip)", 85
-        elif price_change > -0.03 and vol_ratio < 0.9: pattern, confidence = "Toplama / Akümülasyon", 75
-        else: pattern, confidence = "Yatay Kanal / Range", 65
-    else:
-        if rsi_vals[-1] > 60 and vol_ratio > 1.2: pattern, confidence = "Yükselen Momentum", 70
-        elif rsi_vals[-1] < 35 and vol_ratio > 1.3: pattern, confidence = "Dağıtım / Climax", 70
-        else: pattern, confidence = "Belirsiz Bölge", 60
-    return pattern, confidence
+    """
+    Gerçek fiyat action, hacim profili, volatilite ve momentum uyumsuzluklarına
+    dayalı dinamik formasyon tespit eder.
+    """
+    recent = df.tail(50).copy() # Daha geniş pencere
+    prices = recent['Close'].values
+    highs = recent['High'].values
+    lows = recent['Low'].values
+    volumes = recent['Volume'].values
+    rsi_vals = recent['RSI'].values
+    macd_vals = recent['MACD'].values
+    atr = recent['ATR'].mean()
+    
+    # Temel Metrikler
+    price_change_50 = (prices[-1] - prices[0]) / prices[0]
+    price_change_10 = (prices[-1] - prices[-10]) / prices[-10]
+    vol_ratio = np.mean(volumes[-5:]) / (np.mean(volumes[-20:-5]) + 1e-6)
+    
+    # Trend Gücü
+    sma20_val = recent['SMA_20'].iloc[-1]
+    sma50_val = recent['SMA_50'].iloc[-1]
+    price = prices[-1]
+    
+    is_uptrend = price > sma20_val > sma50_val
+    is_downtrend = price < sma20_val < sma50_val
+    is_strong_trend = abs(price_change_50) > 0.15
+    
+    # Volatilite Sıkışması (Bollinger Squeeze mantığı)
+    bb_std = recent['Close'].rolling(20).std().iloc[-1]
+    is_squeeze = bb_std < (atr * 0.8)
+    
+    # Hacim Profili
+    is_vol_spike = vol_ratio > 1.5
+    is_vol_dry = vol_ratio < 0.7
+    
+    # RSI/MACD Divergence Kontrolü (Basitleştirilmiş)
+    # Son 10 barda fiyat düşerken RSI yükseliyor mu? (Pozitif Divergence)
+    price_trend_10 = prices[-1] < prices[-5]
+    rsi_trend_10 = rsi_vals[-1] > rsi_vals[-5]
+    is_pos_div = price_trend_10 and rsi_trend_10
+    
+    # Son 10 barda fiyat yükselirken RSI düşüyor mu? (Negatif Divergence)
+    price_trend_up_10 = prices[-1] > prices[-5]
+    rsi_trend_down_10 = rsi_vals[-1] < rsi_vals[-5]
+    is_neg_div = price_trend_up_10 and rsi_trend_down_10
+    
+    # Mum Formasyonu Kontrolü (Son 2 bar)
+    # Bullish Engulfing: Kırmızıdan sonra büyük yeşil
+    body1 = recent['Close'].iloc[-2] - recent['Open'].iloc[-2]
+    body2 = recent['Close'].iloc[-1] - recent['Open'].iloc[-1]
+    is_bull_engulf = (body1 < 0) and (body2 > 0) and (body2 > abs(body1) * 1.2)
+    is_bear_engulf = (body1 > 0) and (body2 < 0) and (abs(body2) > abs(body1) * 1.2)
+    
+    # === KARAR MEKANİZMASI ===
+    pattern, confidence = "Belirsiz / Kararsız", 50
+    
+    # 1. GÜÇLÜ TREND + HACİM ARTIŞI = Breakout / Momentum
+    if is_strong_trend and is_vol_spike:
+        if is_uptrend:
+            pattern, confidence = "Güçlü Yükseliş Momentum (Breakout)", 90
+        else:
+            pattern, confidence = "Güçlü Düşüş Momentum (Panic Selling)", 90
+            
+    # 2. YATAY + DÜŞÜK HACİM + SIKIŞMA = Toplama / Konsolidasyon
+    elif not is_strong_trend and is_vol_dry and is_squeeze:
+        pattern, confidence = "Volatilite Sıkışması (Squeeze)", 85
+        if price > sma20_val:
+            pattern = "Yükseliş Hazırlığı (Accumulation)"
+        else:
+            pattern = "Düşüş Hazırlığı (Distribution)"
+            
+    # 3. TREND İÇİNDE KÜÇÜK BARLAR = Bayrak / Flama
+    elif (is_uptrend or is_downtrend) and (max(highs[-5:]) - min(lows[-5:])) / price < 0.03:
+        if is_uptrend:
+            pattern, confidence = "Boğa Bayrağı (Bull Flag)", 80
+        else:
+            pattern, confidence = "Ayı Bayrağı (Bear Flag)", 80
+            
+    # 4. DİP BÖLGESİ + POZİTİF DIVERGENCE = TOBO / Çift Dip
+    elif price < sma50_val and is_pos_div:
+        pattern, confidence = "Pozitif Uyumsuzluk (Dip Avcılığı)", 85
+        if min(lows[-15:]) == lows[-1]:
+            pattern = "Çift Dip (Double Bottom / TOBO)"
+            
+    # 5. TEPE BÖLGESİ + NEGATİF DIVERGENCE = Tepe / Dağıtım
+    elif price > sma50_val and is_neg_div:
+        pattern, confidence = "Negatif Uyumsuzluk (Tepe Sinyali)", 85
+        if max(highs[-15:]) == highs[-1]:
+            pattern = "Çift Tepe (Double Top)"
+            
+    # 6. MUM FORMASYONLARI
+    elif is_bull_engulf and price < sma20_val:
+        pattern, confidence = "Bullish Engulfing (Dönüş Sinyali)", 75
+    elif is_bear_engulf and price > sma20_val:
+        pattern, confidence = "Bearish Engulfing (Dönüş Sinyali)", 75
+        
+    # 7. KANAL / ÜÇGEN TESPİTİ
+    elif not is_strong_trend:
+        high_slope = np.polyfit(range(10), highs[-10:], 1)[0]
+        low_slope = np.polyfit(range(10), lows[-10:], 1)[0]
+        
+        if high_slope < 0 and low_slope > 0:
+            pattern, confidence = "Simetrik Üçgen (Sıkışma)", 80
+        elif high_slope < 0 and low_slope >= 0:
+            pattern, confidence = "Düşen Üçgen", 75
+        elif high_slope <= 0 and low_slope > 0:
+            pattern, confidence = "Yükselen Üçgen", 75
+        elif abs(high_slope - low_slope) < 0.001:
+            pattern, confidence = "Yatay Kanal (Range)", 70
+        else:
+            pattern, confidence = "Eğimli Kanal", 65
+            
+    return pattern, int(confidence)
 
 def calc_pivots(df):
     recent = df.tail(20)
@@ -177,7 +263,6 @@ def calc_pivots(df):
 
 # 🆕 TRADINGVIEW PRO GRAFİK MOTORU
 def create_tradingview_chart(df, symbol, pivots):
-    # TradingView renk paleti
     TV_BG = '#131722'
     TV_GRID = '#2A2E39'
     TV_TEXT = '#D1D4DC'
@@ -188,14 +273,12 @@ def create_tradingview_chart(df, symbol, pivots):
     TV_PURPLE = '#9C27B0'
     TV_YELLOW = '#FFD600'
     
-    # 4 Panel: Fiyat + RSI + MACD + Hacim
     fig = make_subplots(
         rows=4, cols=1, shared_xaxes=True, vertical_spacing=0.03,
         row_heights=[0.50, 0.15, 0.18, 0.17],
         subplot_titles=("", "RSI", "MACD", "HACİM")
     )
     
-    # === PANEL 1: MUM GRAFİĞİ ===
     fig.add_trace(go.Candlestick(
         x=df.index, open=df['Open'], high=df['High'], low=df['Low'], close=df['Close'],
         name='Fiyat',
@@ -204,13 +287,11 @@ def create_tradingview_chart(df, symbol, pivots):
         line=dict(width=1)
     ), row=1, col=1)
     
-    # Hareketli Ortalamalar (TradingView tarzı)
     fig.add_trace(go.Scatter(x=df.index, y=df['SMA_20'], name='SMA 20', 
                             line=dict(color=TV_BLUE, width=1.5)), row=1, col=1)
     fig.add_trace(go.Scatter(x=df.index, y=df['SMA_50'], name='SMA 50', 
                             line=dict(color=TV_ORANGE, width=1.5)), row=1, col=1)
     
-    # Pivot Seviyeleri - İnce çizgiler
     pivot_colors = {'r3':TV_RED,'r2':'#FF5252','r1':'#FF8A80','pivot':TV_YELLOW,'s1':'#69F0AE','s2':'#00E676','s3':'#00C853'}
     for lv, val in pivots.items():
         if lv != 'pivot':
@@ -219,12 +300,10 @@ def create_tradingview_chart(df, symbol, pivots):
                          annotation_text=lv.upper(), annotation_position="top right",
                          annotation_font_size=9, annotation_font_color=TV_TEXT, row=1, col=1)
     
-    # Pivot bölgesi highlight (ince)
     fig.add_shape(type="rect", x0=df.index.min(), x1=df.index.max(),
                   y0=pivots['pivot']*0.99, y1=pivots['pivot']*1.01,
                   fillcolor="rgba(255, 214, 0, 0.1)", line_width=0, row=1, col=1)
     
-    # === PANEL 2: RSI ===
     fig.add_trace(go.Scatter(x=df.index, y=df['RSI'], name='RSI', 
                             line=dict(color=TV_PURPLE, width=1.5), fill='tozeroy',
                             fillcolor='rgba(156, 39, 176, 0.1)'), row=2, col=1)
@@ -232,26 +311,21 @@ def create_tradingview_chart(df, symbol, pivots):
     fig.add_hline(y=30, line_color=TV_GREEN, line_dash='dot', line_width=1, row=2, col=1)
     fig.add_hline(y=50, line_color=TV_GRID, line_dash='dash', line_width=0.5, row=2, col=1)
     
-    # === PANEL 3: MACD ===
-    # Histogram çubukları
     hist_colors = [TV_GREEN if v > 0 else TV_RED for v in df['Hist']]
     fig.add_trace(go.Bar(x=df.index, y=df['Hist'], name='Histogram', 
                         marker_color=hist_colors, opacity=0.6), row=3, col=1)
-    # MACD ve Signal çizgileri
     fig.add_trace(go.Scatter(x=df.index, y=df['MACD'], name='MACD', 
                             line=dict(color=TV_BLUE, width=1.5)), row=3, col=1)
     fig.add_trace(go.Scatter(x=df.index, y=df['Signal'], name='Signal', 
                             line=dict(color=TV_ORANGE, width=1.5)), row=3, col=1)
     fig.add_hline(y=0, line_color=TV_GRID, line_dash='dot', line_width=0.5, row=3, col=1)
     
-    # === PANEL 4: HACİM ===
     vol_colors = [TV_GREEN if df['Close'].iloc[i] >= df['Open'].iloc[i] else TV_RED for i in range(len(df))]
     fig.add_trace(go.Bar(x=df.index, y=df['Volume'], name='Hacim', 
                         marker_color=vol_colors, opacity=0.5), row=4, col=1)
     fig.add_trace(go.Scatter(x=df.index, y=df['Vol_SMA_20'], name='Vol SMA20', 
                             line=dict(color=TV_BLUE, width=1, dash='dash')), row=4, col=1)
     
-    # === LAYOUT - TRADINGVIEW TEMASI ===
     fig.update_layout(
         template='plotly_dark',
         height=650,
@@ -262,23 +336,12 @@ def create_tradingview_chart(df, symbol, pivots):
         plot_bgcolor=TV_BG,
         paper_bgcolor=TV_BG,
         font=dict(color=TV_TEXT, size=10),
-        title=dict(
-            text=f"📊 {symbol} | TradingView Pro | {period}",
-            font=dict(size=12, color=TV_TEXT),
-            x=0.5
-        )
+        title=dict(text=f"📊 {symbol} | TradingView Pro", font=dict(size=12, color=TV_TEXT), x=0.5)
     )
     
-    # Grid ve eksen ayarları
-    fig.update_xaxes(showgrid=True, gridcolor=TV_GRID, zeroline=False, 
-                    showline=True, linewidth=1, linecolor=TV_GRID, row=1, col=1)
-    fig.update_yaxes(showgrid=True, gridcolor=TV_GRID, zeroline=False, 
-                    showline=True, linewidth=1, linecolor=TV_GRID, row=1, col=1)
-    
-    # Diğer paneller için grid
-    for row in [2, 3, 4]:
-        fig.update_xaxes(showgrid=True, gridcolor=TV_GRID, row=row, col=1)
-        fig.update_yaxes(showgrid=True, gridcolor=TV_GRID, row=row, col=1)
+    for r in [1, 2, 3, 4]:
+        fig.update_xaxes(showgrid=True, gridcolor=TV_GRID, row=r, col=1)
+        fig.update_yaxes(showgrid=True, gridcolor=TV_GRID, row=r, col=1)
     
     return fig
 
@@ -336,15 +399,15 @@ def generate_report(symbol, data):
 # 🖥️ ANA AKIŞ
 if run_btn or stocks:
     with st.spinner('📡 Yahoo Finance verileri çekiliyor & Qwen AI Pro analiz ediliyor...'):
-        all_data = {}
+        all_
         for s in stocks:
             df, err = fetch_data(s, yf_period)
             if err: st.error(f"❌ {s}: {err}")
             else:
                 df = calc_indicators(df)
-                if len(df) > 20: all_data[s] = {'df': df}
+                if len(df) > 20: all_
         
-        if all_data:
+        if all_
             st.success(f"✅ {len(all_data)} hisse başarıyla analiz edildi.")
             tabs = st.tabs([f"📈 {s}" for s in all_data.keys()])
             for i, (sym, data) in enumerate(all_data.items()):
@@ -357,19 +420,17 @@ if run_btn or stocks:
 
                     st.markdown("## 🔹 AŞAMA 1: METİN TABANLI DERİN ANALİZ")
                     
-                    # 1.1 TABLO
                     st.markdown(f"""
                     ### 1.1 🎯 Formasyon & Dip Tespiti
                     | Parametre | Değer | Yorum |
                     |---|---|---|
-                    | **Dip Çalışması** | RSI {report['rsi']:.1f} | {'✅ Pozitif Uyumsuzluk' if report['rsi']<40 and report['trend']=='Boğa' else '⚪ Nötr'} |
-                    | **Hacim Onayı** | {report['volume_ratio']:.2f}x | {'🟢 Mevcut' if report['volume_ratio']>1 else '🔴 Bekleniyor'} |
+                    | **Formasyon Tipi** | 🟡 **{formasyon}** | Güven: **%{guven}** |
+                    | **Dip/Tep Sinyali** | RSI {report['rsi']:.1f} | {'✅ Pozitif Uyumsuzluk' if report['rsi']<40 and report['trend']=='Boğa' else '⚪ Nötr'} |
+                    | **Hacim Profili** | {report['volume_ratio']:.2f}x ortalama | {'🔥 Yüksek İlgi' if report['volume_ratio']>1.2 else '💤 Düşük İlgi'} |
                     | **Akümülasyon** | {pivots['s2']:.2f} - {pivots['s1']:.2f} TL | Kurumsal Toplama Bölgesi |
-                    | **Formasyon Tipi** | 🟡 {formasyon} | Güven: %{guven} |
                     | **Tamamlanma** | %{guven-10} | Teyit: {pivots['r1']:.2f} TL üzeri 2G kapanış |
                     """)
 
-                    # 1.2 TABLO
                     st.markdown(f"""
                     ### 1.2 🎯 Kritik Seviyeler (NET RAKAMLAR)
                     | Tür | Seviye | TL Değeri | Durum |
@@ -383,7 +444,6 @@ if run_btn or stocks:
                     | 🟢 **Destek 3** | S3 (Stop) | {pivots['s3']:.2f} TL | ⚠️ Stop-Loss Zone |
                     """)
 
-                    # 1.3 TABLO
                     st.markdown(f"""
                     ### 1.3 🏦 Takas Analizi (Kurumsal Akış)
                     | Soru | Yanıt & Veri |
@@ -394,7 +454,6 @@ if run_btn or stocks:
                     | **5 Günlük Eğilim** | 📊 Hacim {report['volume_ratio']:.2f}x ortalama, {'yükseliyor' if report['volume_ratio']>1 else 'düşüyor'} |
                     """)
 
-                    # 1.4 TABLO
                     st.markdown(f"""
                     ### 1.4 📊 İhtimaller: Boğa & Ayı Senaryoları
                     | Senaryo | Tetikleyici | Hedefler (H1→H2) | Stop-Loss | Olasılık | R:Ö |
@@ -403,7 +462,6 @@ if run_btn or stocks:
                     | 🐻 **AYI** | {pivots['s1']:.2f} TL kaybı + MACD(-) | {pivots['s2']:.2f} → {pivots['s3']:.2f} TL | {pivots['r1']:.2f} TL | %{bear_prob} | 1:{report['r_or_bear']} |
                     """)
 
-                    # 1.5 TABLO
                     st.markdown(f"""
                     ### 1.5 🚀 Aksiyon Planı (Hızlı Tarama)
                     | Aksiyon | Detay | Seviye / Kural |
@@ -421,7 +479,6 @@ if run_btn or stocks:
                     c4.metric("📈 Trend", report['trend'], "↗️" if report['trend']=='Boğa' else "↘️")
 
                     st.markdown("## 🔹 AŞAMA 2: GÖRSEL TEKNİK ŞEMA")
-                    # ✅ TRADINGVIEW PRO GRAFİK ÇAĞRISI
                     st.plotly_chart(create_tradingview_chart(df, sym, pivots), use_container_width=True)
                     
                     st.markdown(generate_qwen_commentary(sym, report, df), unsafe_allow_html=True)
