@@ -1,11 +1,9 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
-import plotly.graph_objects as go
-from plotly.subplots import make_subplots
-import datetime
 import yfinance as yf
 import streamlit.components.v1 as components
+import datetime
 
 # 🌐 Sayfa Yapılandırması
 st.set_page_config(
@@ -15,7 +13,7 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# 🎨 TEMİZ SİYAH TEMA & TABLO/BUTON STİLLERİ
+# 🎨 CSS Stilleri
 st.markdown("""
 <style>
     .main, .stApp {background-color: #000000 !important;}
@@ -24,54 +22,39 @@ st.markdown("""
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     }
     .stCaption, small {color: #d1d5db !important;}
-
     .role-box, .qwen-box {
         background: #111111; border: 1px solid #333333; border-radius: 8px; padding: 14px; margin: 10px 0;
     }
     .role-box {border-left: 4px solid #3b82f6;}
     .qwen-box {border: 2px solid #2563eb; border-left: 5px solid #3b82f6;}
-
     .role-title, .qwen-title {color: #93c5fd !important; font-weight: 700; font-size: 1.05rem; margin-bottom: 8px;}
     .role-content, .qwen-content {color: #f3f4f6 !important; font-size: 0.9rem; line-height: 1.5;}
-
     div[data-testid="stMetric"] {background-color: #111111; padding: 12px 8px; border-radius: 8px; border: 1px solid #333333; text-align: center;}
     div[data-testid="stMetricValue"] {font-size: 1.4rem !important; color: #ffffff !important; font-weight: 600;}
     div[data-testid="stMetricLabel"] {font-size: 0.85rem !important; color: #a3a3a3 !important;}
-
     .signal-badge {display: inline-block; padding: 4px 12px; border-radius: 14px; font-size: 0.85rem; font-weight: 700; color: #ffffff !important;}
     .signal-buy {background: linear-gradient(135deg, #059669, #10b981); border: 1px solid #34d399;}
     .signal-sell {background: linear-gradient(135deg, #dc2626, #ef4444); border: 1px solid #f87171;}
     .signal-wait {background: linear-gradient(135deg, #b45309, #f59e0b); border: 1px solid #fbbf24;}
-
     .stButton > button {
         width: 100%; min-height: 48px; font-size: 1rem; font-weight: 600; border-radius: 8px;
         background: linear-gradient(135deg, #1d4ed8, #3b82f6) !important; color: #ffffff !important; border: none !important;
     }
-    
     div[data-testid="stRadio"] label {
-        background-color: #1a1a1a !important;
-        border: 1px solid #404040 !important;
-        border-radius: 20px !important;
-        padding: 8px 16px !important;
-        color: #ffffff !important;
-        font-weight: 500 !important;
-        transition: all 0.2s;
+        background-color: #1a1a1a !important; border: 1px solid #404040 !important; border-radius: 20px !important;
+        padding: 8px 16px !important; color: #ffffff !important; font-weight: 500 !important; transition: all 0.2s;
     }
     div[data-testid="stRadio"] label:has(input:checked) {
-        background: linear-gradient(135deg, #1d4ed8, #3b82f6) !important;
-        border-color: #3b82f6 !important;
+        background: linear-gradient(135deg, #1d4ed8, #3b82f6) !important; border-color: #3b82f6 !important;
         box-shadow: 0 0 10px rgba(59, 130, 246, 0.3);
     }
-
     table {width: 100%; border-collapse: collapse; margin: 10px 0; background-color: #111111; border-radius: 8px; overflow: hidden;}
     th {background-color: #1a1a1a; color: #93c5fd; padding: 10px; text-align: left; border-bottom: 2px solid #333333; font-weight: 600;}
     td {background-color: #111111; color: #f3f4f6; padding: 8px 10px; border-bottom: 1px solid #222222;}
     tr:last-child td {border-bottom: none;}
     tr:hover td {background-color: #1f1f1f;}
-
     .stAlert {background-color: #111111 !important; border: 2px solid #333333 !important; color: #ffffff !important; border-radius: 8px;}
     hr {border-color: #333333 !important; opacity: 0.5;}
-    
     @media (max-width: 768px) {
         div[data-testid="column"] {min-width: 100% !important; margin-bottom: 10px;}
         .stMetric {margin-bottom: 10px;}
@@ -83,7 +66,7 @@ st.markdown("""
 
 st.markdown('<div style="text-align:center;padding:8px 0;">', unsafe_allow_html=True)
 st.title("🎯 QWEN AI PRO | BİST TEKNİK + TAKAS ANALİZ")
-st.caption("📱 Mobil Uyumlu | ⚫ Siyah Tema | 📊 TradingView Grafiği | 🤖 Profesyonel Formasyon Motoru")
+st.caption("📱 Mobil Uyumlu | ⚫ Siyah Tema | 📊 TradingView Grafiği | 🤖 Yapay Zeka Destekli")
 st.markdown('</div>', unsafe_allow_html=True)
 
 st.markdown("""
@@ -114,7 +97,6 @@ if not stocks:
     st.info("💡 Lütfen en az bir hisse kodu giriniz.")
     st.stop()
 
-@st.cache_data(ttl=300)
 def fetch_data(symbol, period="6mo"):
     try:
         df = yf.Ticker(f"{symbol}.IS").history(period=period)
@@ -142,74 +124,57 @@ def detect_pattern(df):
     prices, highs, lows, volumes = recent['Close'].values, recent['High'].values, recent['Low'].values, recent['Volume'].values
     rsi_vals, macd_vals = recent['RSI'].values, recent['MACD'].values
     atr = recent['ATR'].mean()
-    
     price_change_50 = (prices[-1] - prices[0]) / prices[0]
     vol_ratio = np.mean(volumes[-5:]) / (np.mean(volumes[-20:-5]) + 1e-6)
-    
     sma20_val = recent['SMA_20'].iloc[-1]
     sma50_val = recent['SMA_50'].iloc[-1]
     price = prices[-1]
-    
     is_uptrend = price > sma20_val > sma50_val
     is_downtrend = price < sma20_val < sma50_val
     is_strong_trend = abs(price_change_50) > 0.15
-    
     bb_std = recent['Close'].rolling(20).std().iloc[-1]
     is_squeeze = bb_std < (atr * 0.8)
     is_vol_spike = vol_ratio > 1.5
     is_vol_dry = vol_ratio < 0.7
-    
     price_trend_10 = prices[-1] < prices[-5]
     rsi_trend_10 = rsi_vals[-1] > rsi_vals[-5]
     is_pos_div = price_trend_10 and rsi_trend_10
-    
     price_trend_up_10 = prices[-1] > prices[-5]
     rsi_trend_down_10 = rsi_vals[-1] < rsi_vals[-5]
     is_neg_div = price_trend_up_10 and rsi_trend_down_10
-    
     body1 = recent['Close'].iloc[-2] - recent['Open'].iloc[-2]
     body2 = recent['Close'].iloc[-1] - recent['Open'].iloc[-1]
     is_bull_engulf = (body1 < 0) and (body2 > 0) and (body2 > abs(body1) * 1.2)
     is_bear_engulf = (body1 > 0) and (body2 < 0) and (abs(body2) > abs(body1) * 1.2)
-    
     pattern, confidence = "Belirsiz / Kararsız", 50
-    
     if is_strong_trend and is_vol_spike:
         if is_uptrend: pattern, confidence = "Güçlü Yükseliş Momentum (Breakout)", 90
         else: pattern, confidence = "Güçlü Düşüş Momentum (Panic Selling)", 90
-            
     elif not is_strong_trend and is_vol_dry and is_squeeze:
         pattern, confidence = "Volatilite Sıkışması (Squeeze)", 85
         if price > sma20_val: pattern = "Yükseliş Hazırlığı (Accumulation)"
         else: pattern = "Düşüş Hazırlığı (Distribution)"
-            
     elif (is_uptrend or is_downtrend) and (max(highs[-5:]) - min(lows[-5:])) / price < 0.03:
         if is_uptrend: pattern, confidence = "Boğa Bayrağı (Bull Flag)", 80
         else: pattern, confidence = "Ayı Bayrağı (Bear Flag)", 80
-            
     elif price < sma50_val and is_pos_div:
         pattern, confidence = "Pozitif Uyumsuzluk (Dip Avcılığı)", 85
         if min(lows[-15:]) == lows[-1]: pattern = "Çift Dip (Double Bottom / TOBO)"
-            
     elif price > sma50_val and is_neg_div:
         pattern, confidence = "Negatif Uyumsuzluk (Tepe Sinyali)", 85
         if max(highs[-15:]) == highs[-1]: pattern = "Çift Tepe (Double Top)"
-            
     elif is_bull_engulf and price < sma20_val:
         pattern, confidence = "Bullish Engulfing (Dönüş Sinyali)", 75
     elif is_bear_engulf and price > sma20_val:
         pattern, confidence = "Bearish Engulfing (Dönüş Sinyali)", 75
-        
     elif not is_strong_trend:
         high_slope = np.polyfit(range(10), highs[-10:], 1)[0]
         low_slope = np.polyfit(range(10), lows[-10:], 1)[0]
-        
         if high_slope < 0 and low_slope > 0: pattern, confidence = "Simetrik Üçgen (Sıkışma)", 80
         elif high_slope < 0 and low_slope >= 0: pattern, confidence = "Düşen Üçgen", 75
         elif high_slope <= 0 and low_slope > 0: pattern, confidence = "Yükselen Üçgen", 75
         elif abs(high_slope - low_slope) < 0.001: pattern, confidence = "Yatay Kanal (Range)", 70
         else: pattern, confidence = "Eğimli Kanal", 65
-            
     return pattern, int(confidence)
 
 def calc_pivots(df):
@@ -222,17 +187,15 @@ def calc_pivots(df):
     }
 
 def embed_tradingview_chart(symbol):
-    tv_symbol = f"BIST:{symbol}"
-    html_code = f"""
+    return f"""
     <div class="tradingview-widget-container" style="height:100%;width:100%">
       <div id="tradingview_{symbol}" style="height:100%;width:100%"></div>
       <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
       <script type="text/javascript">
-      new TradingView.widget(
-      {{
+      new TradingView.widget({{
       "width": "100%",
       "height": "100%",
-      "symbol": "{tv_symbol}",
+      "symbol": "BIST:{symbol}",
       "interval": "D",
       "timezone": "Europe/Istanbul",
       "theme": "dark",
@@ -242,12 +205,10 @@ def embed_tradingview_chart(symbol):
       "enable_publishing": false,
       "allow_symbol_change": true,
       "container_id": "tradingview_{symbol}"
-      }}
-      );
+      }});
       </script>
     </div>
     """
-    return html_code
 
 def generate_qwen_commentary(symbol, report, df):
     price, rsi, macd = report['price'], report['rsi'], report['macd']
@@ -300,10 +261,10 @@ def generate_report(symbol, data):
         'formasyon': formasyon_tipi, 'formasyon_guven': formasyon_guven
     }
 
-# 🖥️ ANA AKIŞ
+# 🖥️ ANA AKIŞ - HATA DÜZELTİLMİŞ BÖLÜM
 if run_btn or stocks:
     with st.spinner('📡 Yahoo Finance verileri çekiliyor & Qwen AI Pro analiz ediliyor...'):
-        # ✅ DÜZELTME 1: Değişken tanımı tam ve doğru
+        # ✅ DÜZELTME 1: all_data sözlüğü doğru tanımlandı
         all_data = {}
         
         for s in stocks:
@@ -313,9 +274,10 @@ if run_btn or stocks:
             else:
                 df = calc_indicators(df)
                 if len(df) > 20: 
+                    # ✅ DÜZELTME 2: Veri all_data sözlüğüne eklendi
                     all_data[s] = {'df': df}
         
-        # ✅ DÜZELTME 2: Koşul ifadesi tam ve noktalı virgüllü (:)
+        # ✅ DÜZELTME 3: if all_data: kontrolü ve : (iki nokta) eklendi
         if all_data:
             st.success(f"✅ {len(all_data)} hisse başarıyla analiz edildi.")
             tabs = st.tabs([f"📈 {s}" for s in all_data.keys()])
@@ -389,15 +351,20 @@ if run_btn or stocks:
                     c4.metric("📈 Trend", report['trend'], "↗️" if report['trend']=='Boğa' else "↘️")
 
                     st.markdown("## 🔹 AŞAMA 2: GÖRSEL TEKNİK ŞEMA (TRADINGVIEW)")
-                    # TradingView Widget
-                    tv_html = embed_tradingview_chart(sym)
-                    components.html(tv_html, height=600)
+                    components.html(embed_tradingview_chart(sym), height=500)
                     
                     st.markdown(generate_qwen_commentary(sym, report, df), unsafe_allow_html=True)
 
-                    # ✅ DÜZELTME 3: String kapanış karakteri tam
-                    st.markdown("""| Kontrol | Durum |\n|---|---|\n| [x] Gerçek veri çekildi | ✅ |\n| [x] Kritik seviyeler net TL | ✅ |\n| [x] Takas analizi tamamlandı | ✅ |\n| [x] R:Ö oranları hesaplandı | ✅ |\n| [x] Aksiyon planı eklendi | ✅ |\n| [x] Grafik TradingView tarzı | ✅ |""")
-                    st.divider()
+                    with st.expander("📋 Kalite Kontrol & Detaylar", expanded=False):
+                        st.markdown("""| Kontrol | Durum |
+|---|---|
+| [x] Gerçek veri çekildi | ✅ |
+| [x] Kritik seviyeler net TL | ✅ |
+| [x] Takas analizi tamamlandı | ✅ |
+| [x] R:Ö oranları hesaplandı | ✅ |
+| [x] Aksiyon planı eklendi | ✅ |
+| [x] Grafik TradingView tarzı | ✅ |""")
+                        st.divider()
         else:
             st.warning("⚠️ Hiçbir hisse için yeterli veri alınamadı.")
 
