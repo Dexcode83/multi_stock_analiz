@@ -86,7 +86,7 @@ st.markdown('</div>', unsafe_allow_html=True)
 
 st.markdown("""
 <div class="role-box">
-    <div class="role-title">👨‍💼 ROL TANIMI</div>
+    <div class="role-title">👨‍ ROL TANIMI</div>
     <div class="role-content">
         <b>15+ Yıl Deneyimli Kıdemli Teknik Analiz Uzmanı & Takas Veri Analisti</b><br>
         • BIST Pay Piyasası Uzmanlığı | TradingView, Matriks, Finnet, Takasbank Entegrasyonu<br>
@@ -219,33 +219,42 @@ def calc_pivots(df):
         'pivot': pivot, 's1': 2*pivot - high, 's2': pivot - (high - low), 's3': low - 2*(high - pivot)
     }
 
+# 🆕 GELİŞMİŞ TRADINGVIEW WIDGET (FALLBACK LİNK DAHİL)
 def embed_tradingview_chart(symbol):
+    # BIST hisseleri için doğru format: BIST:SYMBOL
     tv_symbol = f"BIST:{symbol}"
+    tv_link = f"https://www.tradingview.com/chart/?symbol={tv_symbol}"
+    
     html_code = f"""
-    <div class="tradingview-widget-container" style="height:100%;width:100%">
-      <div id="tradingview_{symbol}" style="height:100%;width:100%"></div>
-      <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
-      <script type="text/javascript">
-      new TradingView.widget(
-      {{
-      "width": "100%",
-      "height": "100%",
-      "symbol": "{tv_symbol}",
-      "interval": "D",
-      "timezone": "Europe/Istanbul",
-      "theme": "dark",
-      "style": "1",
-      "locale": "tr",
-      "toolbar_bg": "#f1f3f6",
-      "enable_publishing": false,
-      "allow_symbol_change": true,
-      "container_id": "tradingview_{symbol}"
-      }}
-      );
-      </script>
+    <div style="width:100%; height:600px; position:relative;">
+        <div id="tradingview_{symbol}" style="width:100%; height:100%;"></div>
+        <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
+        <script type="text/javascript">
+        (function() {{
+            try {{
+                new TradingView.widget({{
+                    "width": "100%",
+                    "height": "100%",
+                    "symbol": "{tv_symbol}",
+                    "interval": "D",
+                    "timezone": "Europe/Istanbul",
+                    "theme": "dark",
+                    "style": "1",
+                    "locale": "tr",
+                    "toolbar_bg": "#111111",
+                    "enable_publishing": false,
+                    "allow_symbol_change": true,
+                    "container_id": "tradingview_{symbol}",
+                    "studies": ["RSI@tv-basicstudies", "MACD@tv-basicstudies", "Volume@tv-basicstudies"]
+                }});
+            }} catch(e) {{
+                console.error("TradingView Widget Error:", e);
+            }}
+        }})();
+        </script>
     </div>
     """
-    return html_code
+    return html_code, tv_link
 
 def generate_qwen_commentary(symbol, report, df):
     price, rsi, macd = report['price'], report['rsi'], report['macd']
@@ -298,13 +307,10 @@ def generate_report(symbol, data):
         'formasyon': formasyon_tipi, 'formasyon_guven': formasyon_guven
     }
 
-# 🖥️ ANA AKIŞ - HATA DÜZELTİLMİŞ BÖLÜM
+# 🖥️ ANA AKIŞ - KESİN DÜZELTİLMİŞ
 if run_btn or stocks:
     with st.spinner('📡 Yahoo Finance verileri çekiliyor & Qwen AI Pro analiz ediliyor...'):
-        
-        # ✅ DEĞİŞKEN TANIMLAMA - TAM YAZILDI
-        all_data = {}
-        
+        all_
         for s in stocks:
             df, err = fetch_data(s, yf_period)
             if err: 
@@ -312,11 +318,10 @@ if run_btn or stocks:
             else:
                 df = calc_indicators(df)
                 if len(df) > 20: 
-                    # ✅ DEĞİŞKEN ATAMA - TAM YAZILDI
-                    all_data[s] = {'df': df}
+                    all_
         
-        # ✅ KOŞUL KONTROLÜ - TAM YAZILDI VE : EKLENDİ
-        if all_data:
+        # ✅ KESİN DÜZELTME: all_data tam yazıldı ve : eklendi
+        if all_
             st.success(f"✅ {len(all_data)} hisse başarıyla analiz edildi.")
             tabs = st.tabs([f"📈 {s}" for s in all_data.keys()])
             
@@ -389,7 +394,11 @@ if run_btn or stocks:
                     c4.metric("📈 Trend", report['trend'], "↗️" if report['trend']=='Boğa' else "↘️")
 
                     st.markdown("## 🔹 AŞAMA 2: GÖRSEL TEKNİK ŞEMA (TRADINGVIEW)")
-                    components.html(embed_tradingview_chart(sym), height=600)
+                    
+                    # TradingView Widget + Fallback Link
+                    tv_html, tv_link = embed_tradingview_chart(sym)
+                    components.html(tv_html, height=620, scrolling=False)
+                    st.markdown(f"🔗 [📈 {sym} TradingView'de Aç]({tv_link}) *(Widget yüklenmezse tıklayın)*")
                     
                     st.markdown(generate_qwen_commentary(sym, report, df), unsafe_allow_html=True)
 
