@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 import datetime
 import yfinance as yf
-import streamlit.components.v1 as components
+import streamlit.components.v1 as components  # TradingView gömmek için gerekli
 
 # 🌐 Sayfa Yapılandırması
 st.set_page_config(
@@ -221,7 +221,9 @@ def calc_pivots(df):
 
 # 🆕 TRADINGVIEW WIDGET FONKSİYONU
 def embed_tradingview_chart(symbol):
+    # BIST sembolü formatı
     tv_symbol = f"BIST:{symbol}"
+    
     html_code = f"""
     <div class="tradingview-widget-container" style="height:100%;width:100%">
       <div id="tradingview_{symbol}" style="height:100%;width:100%"></div>
@@ -302,15 +304,19 @@ def generate_report(symbol, data):
 # 🖥️ ANA AKIŞ
 if run_btn or stocks:
     with st.spinner('📡 Yahoo Finance verileri çekiliyor & Qwen AI Pro analiz ediliyor...'):
-        all_
+        # 🔧 DÜZELTİLDİ: all_data sözlüğü burada tanımlandı
+        all_data = {}
+        
         for s in stocks:
             df, err = fetch_data(s, yf_period)
-            if err: st.error(f"❌ {s}: {err}")
+            if err: 
+                st.error(f"❌ {s}: {err}")
             else:
                 df = calc_indicators(df)
-                if len(df) > 20: all_
+                if len(df) > 20:
+                    all_data[s] = {'df': df}
         
-        # ✅ KESİN DÜZELTME: 'all_' yerine 'all_data:' tam yazıldı
+        # ✅ all_data kontrolü düzeltildi
         if all_data:
             st.success(f"✅ {len(all_data)} hisse başarıyla analiz edildi.")
             tabs = st.tabs([f"📈 {s}" for s in all_data.keys()])
@@ -383,6 +389,7 @@ if run_btn or stocks:
                     c4.metric("📈 Trend", report['trend'], "↗️" if report['trend']=='Boğa' else "↘️")
 
                     st.markdown("## 🔹 AŞAMA 2: GÖRSEL TEKNİK ŞEMA (TRADINGVIEW)")
+                    # ✅ TRADINGVIEW WIDGET ÇAĞRISI
                     components.html(embed_tradingview_chart(sym), height=600)
                     
                     st.markdown(generate_qwen_commentary(sym, report, df), unsafe_allow_html=True)
