@@ -1,10 +1,9 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
-import plotly.graph_objects as go
-from plotly.subplots import make_subplots
 import datetime
 import yfinance as yf
+import streamlit.components.v1 as components  # TradingView gömmek için gerekli
 
 # 🌐 Sayfa Yapılandırması
 st.set_page_config(
@@ -82,7 +81,7 @@ st.markdown("""
 
 st.markdown('<div style="text-align:center;padding:8px 0;">', unsafe_allow_html=True)
 st.title("🎯 QWEN AI PRO | BİST TEKNİK + TAKAS ANALİZ")
-st.caption("📱 Mobil Uyumlu | ⚫ Siyah Tema | 📊 Tablolu Rapor | 🤖 Profesyonel Formasyon Motoru")
+st.caption("📱 Mobil Uyumlu | ⚫ Siyah Tema | 📊 TradingView Grafiği | 🤖 Profesyonel Formasyon Motoru")
 st.markdown('</div>', unsafe_allow_html=True)
 
 st.markdown("""
@@ -220,88 +219,36 @@ def calc_pivots(df):
         'pivot': pivot, 's1': 2*pivot - high, 's2': pivot - (high - low), 's3': low - 2*(high - pivot)
     }
 
-def create_tradingview_chart(df, symbol, pivots):
-    TV_BG = '#131722'
-    TV_GRID = '#2A2E39'
-    TV_TEXT = '#D1D4DC'
-    TV_GREEN = '#089981'
-    TV_RED = '#F23645'
-    TV_BLUE = '#2962FF'
-    TV_ORANGE = '#FF6D00'
-    TV_PURPLE = '#9C27B0'
-    TV_YELLOW = '#FFD600'
+# 🆕 TRADINGVIEW WIDGET FONKSİYONU
+def embed_tradingview_chart(symbol):
+    # BIST sembolü formatı
+    tv_symbol = f"BIST:{symbol}"
     
-    fig = make_subplots(
-        rows=4, cols=1, shared_xaxes=True, vertical_spacing=0.03,
-        row_heights=[0.50, 0.15, 0.18, 0.17],
-        subplot_titles=("", "RSI", "MACD", "HACİM")
-    )
-    
-    fig.add_trace(go.Candlestick(
-        x=df.index, open=df['Open'], high=df['High'], low=df['Low'], close=df['Close'],
-        name='Fiyat',
-        increasing_line_color=TV_GREEN, decreasing_line_color=TV_RED,
-        increasing_fillcolor=TV_GREEN, decreasing_fillcolor=TV_RED,
-        line=dict(width=1)
-    ), row=1, col=1)
-    
-    fig.add_trace(go.Scatter(x=df.index, y=df['SMA_20'], name='SMA 20', 
-                            line=dict(color=TV_BLUE, width=1.5)), row=1, col=1)
-    fig.add_trace(go.Scatter(x=df.index, y=df['SMA_50'], name='SMA 50', 
-                            line=dict(color=TV_ORANGE, width=1.5)), row=1, col=1)
-    
-    pivot_colors = {'r3':TV_RED,'r2':'#FF5252','r1':'#FF8A80','pivot':TV_YELLOW,'s1':'#69F0AE','s2':'#00E676','s3':'#00C853'}
-    for lv, val in pivots.items():
-        if lv != 'pivot':
-            fig.add_hline(y=val, line_color=pivot_colors.get(lv, TV_TEXT), 
-                         line_dash="dash", line_width=1, opacity=0.7,
-                         annotation_text=lv.upper(), annotation_position="top right",
-                         annotation_font_size=9, annotation_font_color=TV_TEXT, row=1, col=1)
-    
-    fig.add_shape(type="rect", x0=df.index.min(), x1=df.index.max(),
-                  y0=pivots['pivot']*0.99, y1=pivots['pivot']*1.01,
-                  fillcolor="rgba(255, 214, 0, 0.1)", line_width=0, row=1, col=1)
-    
-    fig.add_trace(go.Scatter(x=df.index, y=df['RSI'], name='RSI', 
-                            line=dict(color=TV_PURPLE, width=1.5), fill='tozeroy',
-                            fillcolor='rgba(156, 39, 176, 0.1)'), row=2, col=1)
-    fig.add_hline(y=70, line_color=TV_RED, line_dash='dot', line_width=1, row=2, col=1)
-    fig.add_hline(y=30, line_color=TV_GREEN, line_dash='dot', line_width=1, row=2, col=1)
-    fig.add_hline(y=50, line_color=TV_GRID, line_dash='dash', line_width=0.5, row=2, col=1)
-    
-    hist_colors = [TV_GREEN if v > 0 else TV_RED for v in df['Hist']]
-    fig.add_trace(go.Bar(x=df.index, y=df['Hist'], name='Histogram', 
-                        marker_color=hist_colors, opacity=0.6), row=3, col=1)
-    fig.add_trace(go.Scatter(x=df.index, y=df['MACD'], name='MACD', 
-                            line=dict(color=TV_BLUE, width=1.5)), row=3, col=1)
-    fig.add_trace(go.Scatter(x=df.index, y=df['Signal'], name='Signal', 
-                            line=dict(color=TV_ORANGE, width=1.5)), row=3, col=1)
-    fig.add_hline(y=0, line_color=TV_GRID, line_dash='dot', line_width=0.5, row=3, col=1)
-    
-    vol_colors = [TV_GREEN if df['Close'].iloc[i] >= df['Open'].iloc[i] else TV_RED for i in range(len(df))]
-    fig.add_trace(go.Bar(x=df.index, y=df['Volume'], name='Hacim', 
-                        marker_color=vol_colors, opacity=0.5), row=4, col=1)
-    fig.add_trace(go.Scatter(x=df.index, y=df['Vol_SMA_20'], name='Vol SMA20', 
-                            line=dict(color=TV_BLUE, width=1, dash='dash')), row=4, col=1)
-    
-    fig.update_layout(
-        template='plotly_dark',
-        height=650,
-        margin=dict(l=50, r=20, t=10, b=10),
-        xaxis_rangeslider_visible=False,
-        showlegend=False,
-        hovermode='x unified',
-        plot_bgcolor=TV_BG,
-        paper_bgcolor=TV_BG,
-        font=dict(color=TV_TEXT, size=10),
-        title=dict(text=f"📊 {symbol} | TradingView Pro", font=dict(size=12, color=TV_TEXT), x=0.5)
-    )
-    
-    for r in [1, 2, 3, 4]:
-        fig.update_xaxes(showgrid=True, gridcolor=TV_GRID, row=r, col=1)
-        fig.update_yaxes(showgrid=True, gridcolor=TV_GRID, row=r, col=1)
-    
-    return fig
+    html_code = f"""
+    <div class="tradingview-widget-container" style="height:100%;width:100%">
+      <div id="tradingview_{symbol}" style="height:100%;width:100%"></div>
+      <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
+      <script type="text/javascript">
+      new TradingView.widget(
+      {{
+      "width": "100%",
+      "height": "100%",
+      "symbol": "{tv_symbol}",
+      "interval": "D",
+      "timezone": "Europe/Istanbul",
+      "theme": "dark",
+      "style": "1",
+      "locale": "tr",
+      "toolbar_bg": "#f1f3f6",
+      "enable_publishing": false,
+      "allow_symbol_change": true,
+      "container_id": "tradingview_{symbol}"
+      }}
+      );
+      </script>
+    </div>
+    """
+    return html_code
 
 def generate_qwen_commentary(symbol, report, df):
     price, rsi, macd = report['price'], report['rsi'], report['macd']
@@ -357,16 +304,16 @@ def generate_report(symbol, data):
 # 🖥️ ANA AKIŞ
 if run_btn or stocks:
     with st.spinner('📡 Yahoo Finance verileri çekiliyor & Qwen AI Pro analiz ediliyor...'):
-        all_data = {}
+        all_
         for s in stocks:
             df, err = fetch_data(s, yf_period)
             if err: st.error(f"❌ {s}: {err}")
             else:
                 df = calc_indicators(df)
-                if len(df) > 20: all_data[s] = {'df': df}
+                if len(df) > 20: all_
         
         # ✅ HATA DÜZELTİLDİ: 'all_' yerine 'all_data' tam yazıldı ve ':' eklendi
-        if all_data:
+        if all_
             st.success(f"✅ {len(all_data)} hisse başarıyla analiz edildi.")
             tabs = st.tabs([f"📈 {s}" for s in all_data.keys()])
             for i, (sym, data) in enumerate(all_data.items()):
@@ -437,8 +384,9 @@ if run_btn or stocks:
                     c3.metric("📡 MACD", f"{report['macd']:.2f}", report['signal'])
                     c4.metric("📈 Trend", report['trend'], "↗️" if report['trend']=='Boğa' else "↘️")
 
-                    st.markdown("## 🔹 AŞAMA 2: GÖRSEL TEKNİK ŞEMA")
-                    st.plotly_chart(create_tradingview_chart(df, sym, pivots), use_container_width=True)
+                    st.markdown("## 🔹 AŞAMA 2: GÖRSEL TEKNİK ŞEMA (TRADINGVIEW)")
+                    # ✅ TRADINGVIEW WIDGET ÇAĞRISI
+                    components.html(embed_tradingview_chart(sym), height=600)
                     
                     st.markdown(generate_qwen_commentary(sym, report, df), unsafe_allow_html=True)
 
