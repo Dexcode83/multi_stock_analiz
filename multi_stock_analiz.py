@@ -255,7 +255,7 @@ if run_btn or stocks:
                     all_data[s] = {'df': df}
         
         # ✅ 3. if all_ kontrolü ve : (iki nokta) EKLENDİ
-        if all_
+        if all_data:
             st.success(f"✅ {len(all_data)} hisse başarıyla analiz edildi.")
             tabs = st.tabs([f"📈 {s}" for s in all_data.keys()])
             
