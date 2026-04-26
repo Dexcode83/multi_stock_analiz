@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 import datetime
 import yfinance as yf
-import streamlit.components.v1 as components  # TradingView gömmek için gerekli
+import streamlit.components.v1 as components
 
 # 🌐 Sayfa Yapılandırması
 st.set_page_config(
@@ -221,9 +221,7 @@ def calc_pivots(df):
 
 # 🆕 TRADINGVIEW WIDGET FONKSİYONU
 def embed_tradingview_chart(symbol):
-    # BIST sembolü formatı
     tv_symbol = f"BIST:{symbol}"
-    
     html_code = f"""
     <div class="tradingview-widget-container" style="height:100%;width:100%">
       <div id="tradingview_{symbol}" style="height:100%;width:100%"></div>
@@ -304,7 +302,7 @@ def generate_report(symbol, data):
 # 🖥️ ANA AKIŞ
 if run_btn or stocks:
     with st.spinner('📡 Yahoo Finance verileri çekiliyor & Qwen AI Pro analiz ediliyor...'):
-        all_data
+        all_
         for s in stocks:
             df, err = fetch_data(s, yf_period)
             if err: st.error(f"❌ {s}: {err}")
@@ -312,8 +310,8 @@ if run_btn or stocks:
                 df = calc_indicators(df)
                 if len(df) > 20: all_
         
-        # ✅ HATA DÜZELTİLDİ: 'all_' yerine 'all_data' tam yazıldı ve ':' eklendi
-        if all_data :
+        # ✅ KESİN DÜZELTME: 'all_' yerine 'all_data:' tam yazıldı
+        if all_data:
             st.success(f"✅ {len(all_data)} hisse başarıyla analiz edildi.")
             tabs = st.tabs([f"📈 {s}" for s in all_data.keys()])
             for i, (sym, data) in enumerate(all_data.items()):
@@ -385,24 +383,9 @@ if run_btn or stocks:
                     c4.metric("📈 Trend", report['trend'], "↗️" if report['trend']=='Boğa' else "↘️")
 
                     st.markdown("## 🔹 AŞAMA 2: GÖRSEL TEKNİK ŞEMA (TRADINGVIEW)")
-                    # ✅ TRADINGVIEW WIDGET ÇAĞRISI
                     components.html(embed_tradingview_chart(sym), height=600)
                     
                     st.markdown(generate_qwen_commentary(sym, report, df), unsafe_allow_html=True)
 
                     with st.expander("📋 Kalite Kontrol & Detaylar", expanded=False):
-                        st.markdown("""| Kontrol | Durum |\n|---|---|\n| [x] Gerçek veri çekildi | ✅ |\n| [x] Kritik seviyeler net TL | ✅ |\n| [x] Takas analizi tamamlandı | ✅ |\n| [x] R:Ö oranları hesaplandı | ✅ |\n| [x] Aksiyon planı eklendi | ✅ |\n| [x] Grafik TradingView tarzı | ✅ |\n| [x] Yasal uyarı eklendi | ✅ |""")
-                        st.divider()
-                        st.caption(f"📊 Kaynak: Yahoo Finance BIST | {datetime.datetime.now().strftime('%Y-%m-%d %H:%M')}")
-                    st.divider()
-        else:
-            st.warning("⚠️ Hiçbir hisse için yeterli veri alınamadı.")
-
-    st.warning("""
-    ⚠️ **YASAL UYARI METNİ (ZORUNLU)**
-    Bu rapor yalnızca eğitim ve bilgilendirme amaçlıdır. Yatırım tavsiyesi değildir. 
-    Tüm yatırım kararlarınızı kendi araştırmanız ve lisanslı danışmanlarınızla alınız. 
-    Geçmiş performans geleceğin garantisi değildir.
-    """)
-else:
-    st.info("👆 Hisse kodlarını girip 'Analiz Başlat' butonuna tıklayın")
+                        st.markdown("""| Kontrol | Durum |\n|---|---|\n| [x] Gerçek veri çekildi | ✅ |\n| [x] Kritik seviyeler net TL | ✅ |\n| [x] Takas analizi tamamlandı | ✅ |\n| [x] R:Ö oranları hesaplandı | ✅ |\n| [x] Aksiyon planı eklendi | ✅ |\n| [x] Grafik TradingView tarzı | ✅ |\
