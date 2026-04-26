@@ -1,9 +1,8 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
-import yfinance as yf
-import streamlit.components.v1 as components
 import datetime
+import yfinance as yf
 
 # 🌐 Sayfa Yapılandırması
 st.set_page_config(
@@ -97,6 +96,7 @@ if not stocks:
     st.info("💡 Lütfen en az bir hisse kodu giriniz.")
     st.stop()
 
+@st.cache_data(ttl=300)
 def fetch_data(symbol, period="6mo"):
     try:
         df = yf.Ticker(f"{symbol}.IS").history(period=period)
@@ -122,7 +122,7 @@ def calc_indicators(df):
 def detect_pattern(df):
     recent = df.tail(50).copy()
     prices, highs, lows, volumes = recent['Close'].values, recent['High'].values, recent['Low'].values, recent['Volume'].values
-    rsi_vals, macd_vals = recent['RSI'].values, recent['MACD'].values
+    rsi_vals = recent['RSI'].values
     atr = recent['ATR'].mean()
     price_change_50 = (prices[-1] - prices[0]) / prices[0]
     vol_ratio = np.mean(volumes[-5:]) / (np.mean(volumes[-20:-5]) + 1e-6)
@@ -186,30 +186,6 @@ def calc_pivots(df):
         'pivot': pivot, 's1': 2*pivot - high, 's2': pivot - (high - low), 's3': low - 2*(high - pivot)
     }
 
-def embed_tradingview_chart(symbol):
-    return f"""
-    <div class="tradingview-widget-container" style="height:100%;width:100%">
-      <div id="tradingview_{symbol}" style="height:100%;width:100%"></div>
-      <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
-      <script type="text/javascript">
-      new TradingView.widget({{
-      "width": "100%",
-      "height": "100%",
-      "symbol": "BIST:{symbol}",
-      "interval": "D",
-      "timezone": "Europe/Istanbul",
-      "theme": "dark",
-      "style": "1",
-      "locale": "tr",
-      "toolbar_bg": "#111111",
-      "enable_publishing": false,
-      "allow_symbol_change": true,
-      "container_id": "tradingview_{symbol}"
-      }});
-      </script>
-    </div>
-    """
-
 def generate_qwen_commentary(symbol, report, df):
     price, rsi, macd = report['price'], report['rsi'], report['macd']
     trend, signal = report['trend'], report['signal']
@@ -261,10 +237,11 @@ def generate_report(symbol, data):
         'formasyon': formasyon_tipi, 'formasyon_guven': formasyon_guven
     }
 
-# 🖥️ ANA AKIŞ - HATA DÜZELTİLMİŞ BÖLÜM
+# 🖥️ ANA AKIŞ - ✅ TÜM HATALAR GİDERİLDİ
 if run_btn or stocks:
     with st.spinner('📡 Yahoo Finance verileri çekiliyor & Qwen AI Pro analiz ediliyor...'):
-        # ✅ DÜZELTME 1: all_data sözlüğü doğru tanımlandı
+        
+        # ✅ 1. all_data sözlüğü doğru tanımlandı
         all_data = {}
         
         for s in stocks:
@@ -274,10 +251,10 @@ if run_btn or stocks:
             else:
                 df = calc_indicators(df)
                 if len(df) > 20: 
-                    # ✅ DÜZELTME 2: Veri all_data sözlüğüne eklendi
+                    # ✅ 2. Veri all_data sözlüğüne eklendi
                     all_data[s] = {'df': df}
         
-        # ✅ DÜZELTME 3: if all_data: kontrolü ve : (iki nokta) eklendi
+        # ✅ 3. if all_data: kontrolü ve : (iki nokta) eklendi
         if all_data:
             st.success(f"✅ {len(all_data)} hisse başarıyla analiz edildi.")
             tabs = st.tabs([f"📈 {s}" for s in all_data.keys()])
@@ -350,8 +327,14 @@ if run_btn or stocks:
                     c3.metric("📡 MACD", f"{report['macd']:.2f}", report['signal'])
                     c4.metric("📈 Trend", report['trend'], "↗️" if report['trend']=='Boğa' else "↘️")
 
+                    # ✅ 4. GÖRSEL TEKNİK GRAFİK - TRADINGVIEW IFRAME
                     st.markdown("## 🔹 AŞAMA 2: GÖRSEL TEKNİK ŞEMA (TRADINGVIEW)")
-                    components.html(embed_tradingview_chart(sym), height=500)
+                    
+                    tv_url = f"https://www.tradingview.com/chart/?symbol=BIST:{sym}&interval=D&theme=dark&locale=tr"
+                    iframe_code = f"""
+                    <iframe src="{tv_url}" width="100%" height="500" frameborder="0" allowfullscreen></iframe>
+                    """
+                    st.markdown(iframe_code, unsafe_allow_html=True)
                     
                     st.markdown(generate_qwen_commentary(sym, report, df), unsafe_allow_html=True)
 
