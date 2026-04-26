@@ -313,7 +313,7 @@ if run_btn or stocks:
                 if len(df) > 20: all_
         
         # ✅ HATA DÜZELTİLDİ: 'all_' yerine 'all_data' tam yazıldı ve ':' eklendi
-        if all_data:
+        if all_data :
             st.success(f"✅ {len(all_data)} hisse başarıyla analiz edildi.")
             tabs = st.tabs([f"📈 {s}" for s in all_data.keys()])
             for i, (sym, data) in enumerate(all_data.items()):
