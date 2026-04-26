@@ -237,11 +237,11 @@ def generate_report(symbol, data):
         'formasyon': formasyon_tipi, 'formasyon_guven': formasyon_guven
     }
 
-# 🖥️ ANA AKIŞ - ✅ TÜM HATALAR GİDERİLDİ
+# 🖥️ ANA AKIŞ - ✅ TÜM HATALAR DÜZELTİLDİ
 if run_btn or stocks:
     with st.spinner('📡 Yahoo Finance verileri çekiliyor & Qwen AI Pro analiz ediliyor...'):
         
-        # ✅ 1. all_data sözlüğü doğru tanımlandı
+        # ✅ 1. all_data sözlüğü DOĞRU tanımlandı
         all_data = {}
         
         for s in stocks:
@@ -254,8 +254,8 @@ if run_btn or stocks:
                     # ✅ 2. Veri all_data sözlüğüne eklendi
                     all_data[s] = {'df': df}
         
-        # ✅ 3. if all_data: kontrolü ve : (iki nokta) eklendi
-        if all_data:
+        # ✅ 3. if all_ kontrolü ve : (iki nokta) EKLENDİ
+        if all_
             st.success(f"✅ {len(all_data)} hisse başarıyla analiz edildi.")
             tabs = st.tabs([f"📈 {s}" for s in all_data.keys()])
             
@@ -327,14 +327,22 @@ if run_btn or stocks:
                     c3.metric("📡 MACD", f"{report['macd']:.2f}", report['signal'])
                     c4.metric("📈 Trend", report['trend'], "↗️" if report['trend']=='Boğa' else "↘️")
 
-                    # ✅ 4. GÖRSEL TEKNİK GRAFİK - TRADINGVIEW IFRAME
+                    # ✅ 4. TRADINGVIEW GRAFİK - st.iframe ile + fallback
                     st.markdown("## 🔹 AŞAMA 2: GÖRSEL TEKNİK ŞEMA (TRADINGVIEW)")
                     
                     tv_url = f"https://www.tradingview.com/chart/?symbol=BIST:{sym}&interval=D&theme=dark&locale=tr"
-                    iframe_code = f"""
-                    <iframe src="{tv_url}" width="100%" height="500" frameborder="0" allowfullscreen></iframe>
-                    """
-                    st.markdown(iframe_code, unsafe_allow_html=True)
+                    
+                    # Streamlit Cloud için iframe
+                    st.iframe(tv_url, height=500, width="stretch")
+                    
+                    # Fallback link (iframe yüklenmezse)
+                    st.markdown(f"""
+                    <div style="text-align:center;margin-top:10px;">
+                        <a href="{tv_url}" target="_blank" style="color:#3b82f6;text-decoration:none;">
+                            🔗 {sym} TradingView'de Tam Ekran Aç
+                        </a>
+                    </div>
+                    """, unsafe_allow_html=True)
                     
                     st.markdown(generate_qwen_commentary(sym, report, df), unsafe_allow_html=True)
 
