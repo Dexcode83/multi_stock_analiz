@@ -47,7 +47,7 @@ st.markdown("""
         background: linear-gradient(135deg, #1d4ed8, #3b82f6) !important; color: #ffffff !important; border: none !important;
     }
     
-    /* Tıklanabilir Periyot Butonları */
+    /* Tıklanabilir Periyot Butonları (Radio) */
     div[data-testid="stRadio"] label {
         background-color: #1a1a1a !important;
         border: 1px solid #404040 !important;
@@ -55,16 +55,19 @@ st.markdown("""
         padding: 8px 16px !important;
         color: #ffffff !important;
         font-weight: 500 !important;
+        transition: all 0.2s;
     }
     div[data-testid="stRadio"] label:has(input:checked) {
         background: linear-gradient(135deg, #1d4ed8, #3b82f6) !important;
         border-color: #3b82f6 !important;
+        box-shadow: 0 0 10px rgba(59, 130, 246, 0.3);
     }
 
     /* Tablolar */
-    table {width: 100%; border-collapse: collapse; margin: 10px 0;}
-    th {background-color: #1a1a1a; color: #93c5fd; padding: 10px; text-align: left; border-bottom: 2px solid #333333;}
+    table {width: 100%; border-collapse: collapse; margin: 10px 0; background-color: #111111; border-radius: 8px; overflow: hidden;}
+    th {background-color: #1a1a1a; color: #93c5fd; padding: 10px; text-align: left; border-bottom: 2px solid #333333; font-weight: 600;}
     td {background-color: #111111; color: #f3f4f6; padding: 8px 10px; border-bottom: 1px solid #222222;}
+    tr:last-child td {border-bottom: none;}
     tr:hover td {background-color: #1f1f1f;}
 
     .stAlert {background-color: #111111 !important; border: 2px solid #333333 !important; color: #ffffff !important; border-radius: 8px;}
@@ -252,18 +255,18 @@ def generate_report(symbol, data):
 # 🖥️ ANA AKIŞ
 if run_btn or stocks:
     with st.spinner('📡 Yahoo Finance verileri çekiliyor & Qwen AI Pro analiz ediliyor...'):
-        all_
+        all_data = {} # ✅ DEĞİŞKEN ADI TAM YAZILDI
         for s in stocks:
             df, err = fetch_data(s, yf_period)
             if err: st.error(f"❌ {s}: {err}")
             else:
                 df = calc_indicators(df)
-                if len(df) > 20: all_
+                if len(df) > 20: all_data[s] = {'df': df}
         
-        # ✅ SORUNSUZ SYNTAX
-        if all_data
-            st.success(f"✅ {len(all_)} hisse başarıyla analiz edildi.")
-            tabs = st.tabs([f"📈 {s}" for s in all_])
+        # ✅ HATA DÜZELTİLDİ: `if all_data:` olarak güncellendi
+        if all_data:
+            st.success(f"✅ {len(all_data)} hisse başarıyla analiz edildi.")
+            tabs = st.tabs([f"📈 {s}" for s in all_data.keys()])
             for i, (sym, data) in enumerate(all_data.items()):
                 with tabs[i]:
                     df = data['df']
