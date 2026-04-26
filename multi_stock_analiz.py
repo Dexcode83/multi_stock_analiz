@@ -126,7 +126,7 @@ def calc_indicators(df):
     df['SMA_20'] = df['Close'].rolling(20).mean()
     df['SMA_50'] = df['Close'].rolling(50).mean()
     df['Vol_SMA_20'] = df['Volume'].rolling(20).mean()
-    df['ATR'] = (df['High'] - df['Low']).rolling(14).mean() # Volatilite ölçüsü
+    df['ATR'] = (df['High'] - df['Low']).rolling(14).mean()
     delta = df['Close'].diff()
     gain = delta.where(delta > 0, 0).rolling(14).mean()
     loss = (-delta.where(delta < 0, 0)).rolling(14).mean()
@@ -136,27 +136,15 @@ def calc_indicators(df):
     df['Hist'] = df['MACD'] - df['Signal']
     return df.dropna()
 
-# 🆕 PROFESYONEL FORMASYON TESPİT MOTORU
 def detect_pattern(df):
-    """
-    Gerçek fiyat action, hacim profili, volatilite ve momentum uyumsuzluklarına
-    dayalı dinamik formasyon tespit eder.
-    """
-    recent = df.tail(50).copy() # Daha geniş pencere
-    prices = recent['Close'].values
-    highs = recent['High'].values
-    lows = recent['Low'].values
-    volumes = recent['Volume'].values
-    rsi_vals = recent['RSI'].values
-    macd_vals = recent['MACD'].values
+    recent = df.tail(50).copy()
+    prices, highs, lows, volumes = recent['Close'].values, recent['High'].values, recent['Low'].values, recent['Volume'].values
+    rsi_vals, macd_vals = recent['RSI'].values, recent['MACD'].values
     atr = recent['ATR'].mean()
     
-    # Temel Metrikler
     price_change_50 = (prices[-1] - prices[0]) / prices[0]
-    price_change_10 = (prices[-1] - prices[-10]) / prices[-10]
     vol_ratio = np.mean(volumes[-5:]) / (np.mean(volumes[-20:-5]) + 1e-6)
     
-    # Trend Gücü
     sma20_val = recent['SMA_20'].iloc[-1]
     sma50_val = recent['SMA_50'].iloc[-1]
     price = prices[-1]
@@ -165,90 +153,61 @@ def detect_pattern(df):
     is_downtrend = price < sma20_val < sma50_val
     is_strong_trend = abs(price_change_50) > 0.15
     
-    # Volatilite Sıkışması (Bollinger Squeeze mantığı)
     bb_std = recent['Close'].rolling(20).std().iloc[-1]
     is_squeeze = bb_std < (atr * 0.8)
-    
-    # Hacim Profili
     is_vol_spike = vol_ratio > 1.5
     is_vol_dry = vol_ratio < 0.7
     
-    # RSI/MACD Divergence Kontrolü (Basitleştirilmiş)
-    # Son 10 barda fiyat düşerken RSI yükseliyor mu? (Pozitif Divergence)
     price_trend_10 = prices[-1] < prices[-5]
     rsi_trend_10 = rsi_vals[-1] > rsi_vals[-5]
     is_pos_div = price_trend_10 and rsi_trend_10
     
-    # Son 10 barda fiyat yükselirken RSI düşüyor mu? (Negatif Divergence)
     price_trend_up_10 = prices[-1] > prices[-5]
     rsi_trend_down_10 = rsi_vals[-1] < rsi_vals[-5]
     is_neg_div = price_trend_up_10 and rsi_trend_down_10
     
-    # Mum Formasyonu Kontrolü (Son 2 bar)
-    # Bullish Engulfing: Kırmızıdan sonra büyük yeşil
     body1 = recent['Close'].iloc[-2] - recent['Open'].iloc[-2]
     body2 = recent['Close'].iloc[-1] - recent['Open'].iloc[-1]
     is_bull_engulf = (body1 < 0) and (body2 > 0) and (body2 > abs(body1) * 1.2)
     is_bear_engulf = (body1 > 0) and (body2 < 0) and (abs(body2) > abs(body1) * 1.2)
     
-    # === KARAR MEKANİZMASI ===
     pattern, confidence = "Belirsiz / Kararsız", 50
     
-    # 1. GÜÇLÜ TREND + HACİM ARTIŞI = Breakout / Momentum
     if is_strong_trend and is_vol_spike:
-        if is_uptrend:
-            pattern, confidence = "Güçlü Yükseliş Momentum (Breakout)", 90
-        else:
-            pattern, confidence = "Güçlü Düşüş Momentum (Panic Selling)", 90
+        if is_uptrend: pattern, confidence = "Güçlü Yükseliş Momentum (Breakout)", 90
+        else: pattern, confidence = "Güçlü Düşüş Momentum (Panic Selling)", 90
             
-    # 2. YATAY + DÜŞÜK HACİM + SIKIŞMA = Toplama / Konsolidasyon
     elif not is_strong_trend and is_vol_dry and is_squeeze:
         pattern, confidence = "Volatilite Sıkışması (Squeeze)", 85
-        if price > sma20_val:
-            pattern = "Yükseliş Hazırlığı (Accumulation)"
-        else:
-            pattern = "Düşüş Hazırlığı (Distribution)"
+        if price > sma20_val: pattern = "Yükseliş Hazırlığı (Accumulation)"
+        else: pattern = "Düşüş Hazırlığı (Distribution)"
             
-    # 3. TREND İÇİNDE KÜÇÜK BARLAR = Bayrak / Flama
     elif (is_uptrend or is_downtrend) and (max(highs[-5:]) - min(lows[-5:])) / price < 0.03:
-        if is_uptrend:
-            pattern, confidence = "Boğa Bayrağı (Bull Flag)", 80
-        else:
-            pattern, confidence = "Ayı Bayrağı (Bear Flag)", 80
+        if is_uptrend: pattern, confidence = "Boğa Bayrağı (Bull Flag)", 80
+        else: pattern, confidence = "Ayı Bayrağı (Bear Flag)", 80
             
-    # 4. DİP BÖLGESİ + POZİTİF DIVERGENCE = TOBO / Çift Dip
     elif price < sma50_val and is_pos_div:
         pattern, confidence = "Pozitif Uyumsuzluk (Dip Avcılığı)", 85
-        if min(lows[-15:]) == lows[-1]:
-            pattern = "Çift Dip (Double Bottom / TOBO)"
+        if min(lows[-15:]) == lows[-1]: pattern = "Çift Dip (Double Bottom / TOBO)"
             
-    # 5. TEPE BÖLGESİ + NEGATİF DIVERGENCE = Tepe / Dağıtım
     elif price > sma50_val and is_neg_div:
         pattern, confidence = "Negatif Uyumsuzluk (Tepe Sinyali)", 85
-        if max(highs[-15:]) == highs[-1]:
-            pattern = "Çift Tepe (Double Top)"
+        if max(highs[-15:]) == highs[-1]: pattern = "Çift Tepe (Double Top)"
             
-    # 6. MUM FORMASYONLARI
     elif is_bull_engulf and price < sma20_val:
         pattern, confidence = "Bullish Engulfing (Dönüş Sinyali)", 75
     elif is_bear_engulf and price > sma20_val:
         pattern, confidence = "Bearish Engulfing (Dönüş Sinyali)", 75
         
-    # 7. KANAL / ÜÇGEN TESPİTİ
     elif not is_strong_trend:
         high_slope = np.polyfit(range(10), highs[-10:], 1)[0]
         low_slope = np.polyfit(range(10), lows[-10:], 1)[0]
         
-        if high_slope < 0 and low_slope > 0:
-            pattern, confidence = "Simetrik Üçgen (Sıkışma)", 80
-        elif high_slope < 0 and low_slope >= 0:
-            pattern, confidence = "Düşen Üçgen", 75
-        elif high_slope <= 0 and low_slope > 0:
-            pattern, confidence = "Yükselen Üçgen", 75
-        elif abs(high_slope - low_slope) < 0.001:
-            pattern, confidence = "Yatay Kanal (Range)", 70
-        else:
-            pattern, confidence = "Eğimli Kanal", 65
+        if high_slope < 0 and low_slope > 0: pattern, confidence = "Simetrik Üçgen (Sıkışma)", 80
+        elif high_slope < 0 and low_slope >= 0: pattern, confidence = "Düşen Üçgen", 75
+        elif high_slope <= 0 and low_slope > 0: pattern, confidence = "Yükselen Üçgen", 75
+        elif abs(high_slope - low_slope) < 0.001: pattern, confidence = "Yatay Kanal (Range)", 70
+        else: pattern, confidence = "Eğimli Kanal", 65
             
     return pattern, int(confidence)
 
@@ -261,7 +220,6 @@ def calc_pivots(df):
         'pivot': pivot, 's1': 2*pivot - high, 's2': pivot - (high - low), 's3': low - 2*(high - pivot)
     }
 
-# 🆕 TRADINGVIEW PRO GRAFİK MOTORU
 def create_tradingview_chart(df, symbol, pivots):
     TV_BG = '#131722'
     TV_GRID = '#2A2E39'
@@ -399,15 +357,16 @@ def generate_report(symbol, data):
 # 🖥️ ANA AKIŞ
 if run_btn or stocks:
     with st.spinner('📡 Yahoo Finance verileri çekiliyor & Qwen AI Pro analiz ediliyor...'):
-        all_
+        all_data = {}
         for s in stocks:
             df, err = fetch_data(s, yf_period)
             if err: st.error(f"❌ {s}: {err}")
             else:
                 df = calc_indicators(df)
-                if len(df) > 20: all_
+                if len(df) > 20: all_data[s] = {'df': df}
         
-        if all_
+        # ✅ HATA DÜZELTİLDİ: 'all_' yerine 'all_data' tam yazıldı ve ':' eklendi
+        if all_data:
             st.success(f"✅ {len(all_data)} hisse başarıyla analiz edildi.")
             tabs = st.tabs([f"📈 {s}" for s in all_data.keys()])
             for i, (sym, data) in enumerate(all_data.items()):
